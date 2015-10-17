@@ -20,7 +20,7 @@ public class DBCreation
 	 */
 	public void createTables()
 	{
-		String inputFile = connection.getSQLPath("sql-dir", "sql-create-tables");
+		String inputFile = connection.getSQLPath("sql-create-tables");
 
 		boolean success = connection.executeFile(new File(inputFile), Level.INFO);
 		if (success)

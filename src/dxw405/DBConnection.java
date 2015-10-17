@@ -222,18 +222,15 @@ public class DBConnection
 		logger.warning(msg);
 	}
 
-	public String getSQLPath(String... paths)
+	/**
+	 * Gets the relative path to the SQL file corresponding to the given config key
+	 *
+	 * @param sqlFile Config key for SQL file
+	 * @return Relative path
+	 */
+	public String getSQLPath(String sqlFile)
 	{
-		StringBuilder builder = new StringBuilder();
-
-		for (String piece : paths)
-			builder.append(getFromConfig(piece)).append(File.separator);
-
-		// strip last file separator and add extension
-		builder.setLength(builder.length() - File.separator.length());
-		builder.append(".sql");
-
-		return builder.toString();
+		return getFromConfig("sql-dir") + File.separator + getFromConfig(sqlFile) + ".sql";
 	}
 
 	private String getFromConfig(String key)
