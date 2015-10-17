@@ -16,19 +16,19 @@ public class DBCreation
 	}
 
 	/**
-	 * Creates the tables by executing the queries in the given file
-	 *
-	 * @param inputFile SQL file
+	 * Creates the tables by executing the commands in the create-tables SQL file
 	 */
-	public void createTables(File inputFile)
+	public void createTables()
 	{
-		boolean success = connection.executeFile(inputFile, Level.INFO);
+		String inputFile = connection.getSQLPath("sql-dir", "sql-create-tables");
+
+		boolean success = connection.executeFile(new File(inputFile), Level.INFO);
 		if (success)
-			connection.info("Created tables successfully from (" + inputFile.getPath() + ")");
+			connection.info("Created tables successfully from (" + inputFile + ")");
 	}
 
 	/**
-	 * Populates the tables with randomly generated data
+	 * Populates the tables with randomly generated ata
 	 */
 	public void populateTables()
 	{

@@ -3,14 +3,13 @@ package dxw405.util;
 import dxw405.DBConnection;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
 /**
- * Reads in SQL queries from a file, excluding comments
+ * Reads in SQL commands from a file, excluding comments
  */
 public class SQLFileParser
 {
@@ -22,38 +21,19 @@ public class SQLFileParser
 	}
 
 	/**
-	 * @param file SQL file with queries
-	 * @return List of queries (in order) read from the file. Null if operation failed
+	 * @param file SQL file with commands
+	 * @return List of commands (in order) read from the file. Null if operation failed
 	 */
 	public List<String> parseFile(File file)
 	{
-		// invalid
-		if (file == null)
-		{
-			connection.severe("Input file is null");
+		FileInputStream stream = Utils.readFile(connection, file);
+		if (stream == null)
 			return null;
-		}
 
-		// doesn't exist
-		if (!file.exists())
-		{
-			connection.severe("Input file doesn't exist (" + file.getPath() + ")");
-			return null;
-		}
+		Scanner scanner = new Scanner(stream);
+		scanner.useDelimiter("(;(\r)?\n)|(--\n)");
 
-		Scanner scanner;
-
-		try
-		{
-			scanner = new Scanner(new FileReader(file));
-			scanner.useDelimiter("(;(\r)?\n)|(--\n)");
-		} catch (FileNotFoundException e)
-		{
-			connection.severe("Could not read input file: " + e);
-			return null;
-		}
-
-		List<String> queries = new ArrayList<>();
+		List<String> commands = new ArrayList<>();
 
 		while (scanner.hasNext())
 		{
@@ -61,18 +41,18 @@ public class SQLFileParser
 			if (line.isEmpty())
 				continue;
 
-			queries.add(stripComments(line));
+			commands.add(stripComments(line));
 		}
 
-
-		return queries;
+		Utils.closeStream(connection, stream);
+		return commands;
 	}
 
 	/**
 	 * Strips preceding comments (--) from the given string
 	 *
-	 * @param line SQL query with preceding comments
-	 * @return The query without preceding comments
+	 * @param line SQL command with preceding comments
+	 * @return The command without preceding comments
 	 */
 	private String stripComments(String line)
 	{

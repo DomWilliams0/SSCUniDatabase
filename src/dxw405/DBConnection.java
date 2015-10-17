@@ -1,5 +1,6 @@
 package dxw405;
 
+import dxw405.util.Config;
 import dxw405.util.SQLFileParser;
 
 import java.io.File;
@@ -13,23 +14,35 @@ public class DBConnection
 	private Connection connection;
 	private SQLFileParser fileParser;
 	private Logger logger;
+	private Config config;
 
 
-	public DBConnection(Level logLevel, String host, String dbName, String user, String pwd, boolean dropAll)
+	/**
+	 * @param logLevel   Log level for the logger
+	 * @param configFile Path to the config file
+	 * @param dropAll    Whether to drop all tables in the database or not
+	 */
+	public DBConnection(Level logLevel, String configFile, boolean dropAll)
 	{
+		// config
+		config = new Config(this);
+		boolean configLoaded = config.load(new File(configFile));
+		if (!configLoaded)
+			halt("Could not load the config");
+
+		DBDetails details = new DBDetails(config);
+
 		// logger
-		initLogger(logLevel, dbName);
+		initLogger(logLevel, details.dbName);
 
 		// db connection
-		boolean connectionSuccess = createConnection(host, dbName, user, pwd);
+		boolean connectionSuccess = createConnection(details);
 		if (!connectionSuccess)
-		{
-			logger.severe("Could not obtain a connection to the database");
-			return;
-		}
+			halt("Could not obtain a connection to the database");
 
 		// file parser
 		fileParser = new SQLFileParser(this);
+
 
 		// drop all tables
 		if (dropAll)
@@ -39,6 +52,18 @@ public class DBConnection
 				logger.info("Dropped all tables");
 		}
 	}
+
+	/**
+	 * Immediately crashes the program with the given message
+	 *
+	 * @param msg Halt message
+	 */
+	private void halt(String msg)
+	{
+		severe("HALTING: " + msg);
+		System.exit(2);
+	}
+
 
 	/**
 	 * @param logLevel The logger's log level
@@ -55,13 +80,10 @@ public class DBConnection
 	/**
 	 * Attempts to obtain a connection to the given database using the given credentials
 	 *
-	 * @param host   DB host
-	 * @param dbName DB name
-	 * @param user   DB username
-	 * @param pwd    DB password
+	 * @param details Database details
 	 * @return If the operation was successful
 	 */
-	private boolean createConnection(String host, String dbName, String user, String pwd)
+	private boolean createConnection(DBDetails details)
 	{
 		System.setProperty("jdbc.drivers", "org.postgresql.Driver");
 
@@ -74,14 +96,15 @@ public class DBConnection
 			return false;
 		}
 
-		String url = "jdbc:postgresql://" + host + "/" + dbName;
+		String url = "jdbc:postgresql://" + details.host + "/" + details.dbName;
+		logger.fine("Attempting to connect to " + url);
 		try
 		{
-			connection = DriverManager.getConnection(url, user, pwd);
+			connection = DriverManager.getConnection(url, details.user, details.password);
 			logger.info("Connected to the database \"" + url + "\"");
 		} catch (SQLException e)
 		{
-			logger.severe("Could not connect to the database (" + e + ")");
+			logger.severe("Could not connect to the database (" + url + "): " + e);
 			return false;
 		}
 
@@ -95,7 +118,7 @@ public class DBConnection
 
 
 	/**
-	 * Executes the queries sequentially in the given file, and logs queries to FINE
+	 * Executes the commands sequentially in the given file, and logs commands to FINE
 	 *
 	 * @param file The input SQL file
 	 * @return If the operation succeeded
@@ -106,16 +129,16 @@ public class DBConnection
 	}
 
 	/**
-	 * Executes the queries sequentially in the given file
+	 * Executes the commands sequentially in the given file
 	 *
-	 * @param file          The input SQL file
-	 * @param queryLogLevel The log level at which to log each query
+	 * @param file            The input SQL file
+	 * @param commandLogLevel The log level at which to log each command
 	 * @return If the operation succeeded
 	 */
-	public boolean executeFile(File file, Level queryLogLevel)
+	public boolean executeFile(File file, Level commandLogLevel)
 	{
-		List<String> queries = fileParser.parseFile(file);
-		if (queries == null)
+		List<String> commands = fileParser.parseFile(file);
+		if (commands == null)
 			return false;
 
 		Statement statement;
@@ -128,15 +151,15 @@ public class DBConnection
 			return false;
 		}
 
-		for (String query : queries)
+		for (String command : commands)
 		{
 			try
 			{
-				statement.execute(query);
-				logger.log(queryLogLevel, "Executed query: " + query);
+				statement.execute(command);
+				logger.log(commandLogLevel, "Executed command: " + command);
 			} catch (SQLException e)
 			{
-				logger.log(queryLogLevel, "Could not execute query: " + e);
+				logger.log(commandLogLevel, "Could not execute command: " + e);
 			}
 		}
 
@@ -153,23 +176,23 @@ public class DBConnection
 
 
 	/**
-	 * Executes the given query as a Statement using executeUpdate
+	 * Executes the given command as a Statement using executeUpdate
 	 * SQLExceptions will be logged as severe
 	 *
-	 * @param query The query to execute
+	 * @param command The command to execute
 	 * @return If the operation succeeded or not
 	 */
-	public boolean executeUpdate(String query)
+	public boolean executeUpdate(String command)
 	{
 		try
 		{
 			Statement statement = connection.createStatement();
-			statement.executeUpdate(query);
+			statement.executeUpdate(command);
 			statement.close();
 			return true;
 		} catch (SQLException e)
 		{
-			logger.severe("Failed to execute query: " + e);
+			logger.severe("Failed to execute command: " + e);
 			return false;
 		}
 	}
@@ -197,5 +220,42 @@ public class DBConnection
 	public void warning(String msg)
 	{
 		logger.warning(msg);
+	}
+
+	public String getSQLPath(String... paths)
+	{
+		StringBuilder builder = new StringBuilder();
+
+		for (String piece : paths)
+			builder.append(getFromConfig(piece)).append(File.separator);
+
+		// strip last file separator and add extension
+		builder.setLength(builder.length() - File.separator.length());
+		builder.append(".sql");
+
+		return builder.toString();
+	}
+
+	private String getFromConfig(String key)
+	{
+		return config.get(key);
+	}
+}
+
+class DBDetails
+{
+	String host, dbName, user, password;
+
+	public DBDetails(String host, String dbName, String user, String password)
+	{
+		this.host = host;
+		this.dbName = dbName;
+		this.user = user;
+		this.password = password;
+	}
+
+	public DBDetails(Config config)
+	{
+		this(config.get("db-host"), config.get("db-name"), config.get("db-user"), config.get("db-pass"));
 	}
 }
