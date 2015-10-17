@@ -22,10 +22,10 @@ INSERT INTO RegistrationType VALUES
 -- Student (studentID, titleID, forename, familyName, dateOfBirth)
 CREATE TABLE Student (
   studentID   INTEGER PRIMARY KEY      CHECK (studentID > 0),
-  titleID INTEGER REFERENCES Titles NOT NULL,
-  forename    CHAR(32) NOT NULL,
-  familyName  CHAR(32) NOT NULL,
-  dateOfBirth DATE     NOT NULL CHECK (dateOfBirth > '1900-01-01' :: DATE)
+  titleID     INTEGER REFERENCES Titles NOT NULL,
+  forename    CHAR(32)                  NOT NULL,
+  familyName  CHAR(32)                  NOT NULL,
+  dateOfBirth DATE                      NOT NULL CHECK (dateOfBirth > '1900-01-01' :: DATE)
 );
 
 -- Lecturer (lecturerID, titleID, foreName, familyName)

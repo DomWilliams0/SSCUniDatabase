@@ -6,6 +6,7 @@ import dxw405.util.SQLFileParser;
 import java.io.File;
 import java.sql.*;
 import java.util.List;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -74,7 +75,15 @@ public class DBConnection
 		logger = Logger.getLogger(name);
 		logger.setLevel(logLevel);
 
+		// log formatting
 		System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tH:%1$tM:%1$tS [%4$7s] %5$s%6$s%n");
+		System.setProperty("java.util.logging.ConsoleHandler.formatter", "java.util.logging.SimpleFormatter");
+
+		// log level publishing
+		logger.setUseParentHandlers(false);
+		ConsoleHandler handler = new ConsoleHandler();
+		handler.setLevel(logLevel);
+		logger.addHandler(handler);
 	}
 
 	/**
@@ -197,14 +206,41 @@ public class DBConnection
 		}
 	}
 
+	/**
+	 * Executes the given query as a Statement using executeQuery
+	 * SQLExceptions will be logged as severe
+	 *
+	 * @param query The query to execute
+	 * @return The ResultSet if successful, null otherwise
+	 */
+	public ResultSet executeQuery(String query)
+	{
+		try
+		{
+			Statement statement = connection.createStatement();
+			return statement.executeQuery(query);
+
+		} catch (SQLException e)
+		{
+			logger.severe("Failed to execute query: " + e);
+			return null;
+		}
+	}
+
 	public PreparedStatement prepareStatement(String sql) throws SQLException
 	{
 		return connection.prepareStatement(sql);
 	}
 
-	public void close() throws SQLException
+	public void close()
 	{
-		connection.close();
+		try
+		{
+			connection.close();
+		} catch (SQLException e)
+		{
+			logger.severe("Could not close connection:" + e);
+		}
 	}
 
 	public void info(String msg)
@@ -220,6 +256,11 @@ public class DBConnection
 	public void warning(String msg)
 	{
 		logger.warning(msg);
+	}
+
+	public void fine(String msg)
+	{
+		logger.fine(msg);
 	}
 
 	/**

@@ -4,6 +4,9 @@ import dxw405.util.Utils;
 
 import java.io.*;
 import java.sql.Date;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -14,12 +17,55 @@ import java.util.logging.Level;
  */
 public class DBCreation
 {
+	private static final long MIN_DATE = 631152000000L; // 1990-1-1
+	private static final long MAX_DATE = 946684800000L; // 2000-1-1
+
 	private DBConnection connection;
+	private RandomNames randomNames;
+
+	private int titleCount;
+	private int registrationTypeCount;
 
 	public DBCreation(DBConnection connection)
 	{
 		this.connection = connection;
+		this.randomNames = null;
+
 	}
+
+	private void countEnums()
+	{
+		registrationTypeCount = count("registrationTypeID", "RegistrationType");
+		titleCount = count("titleID", "Titles");
+	}
+
+	/**
+	 * Executes a simple COUNT(column) FROM table query
+	 *
+	 * @param column The column to count
+	 * @param table  The table to count in
+	 * @return The query result, or -1 if the operation failed
+	 */
+	private int count(String column, String table)
+	{
+		try
+		{
+			ResultSet resultSet = connection.executeQuery("SELECT COUNT(" + column + ") FROM " + table);
+			int ret = -1;
+			while (resultSet.next())
+				ret = resultSet.getInt(1);
+
+			resultSet.close();
+			return ret;
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not count column " + column + " in table " + table + ": " + e);
+			return -1;
+		}
+
+	}
+
 
 	/**
 	 * Creates the tables by executing the commands in the create-tables SQL file
@@ -32,6 +78,7 @@ public class DBCreation
 		if (success)
 			connection.info("Created tables successfully from (" + inputFile + ")");
 
+		countEnums();
 	}
 
 	/**
@@ -49,53 +96,83 @@ public class DBCreation
 		int lecturerCount = connection.getIntFromConfig("random-lecturer-count");
 		totalRandomNames += (lecturerCount * 2) * 2;
 
-		String[] randomNames = new String[totalRandomNames];
-		getRandomNames(randomNames, connection.getResourcePath("res-random-names"));
+		randomNames = getRandomNames(totalRandomNames, connection.getResourcePath("res-random-names"));
+		if (randomNames == null)
+			return;
 
-		// create students
-		addRandomStudents(studentCount, randomNames);
+		connection.fine("Loaded " + randomNames.size() + " random names");
 
-		//		// first : second names
-		//		for (int i = 0; i < names.length - 1; i += 2)
-		//		{
-		//			String forename = names[i];
-		//			String surname = names[i + 1];
-		//
-		//			System.out.println(forename + " " + surname);
-		//		}
+
+		// create students and lecturers
+		addRandomPeople(studentCount, 1433000, true);
+		connection.info("Created " + studentCount + " random students");
+
+		addRandomPeople(lecturerCount, 1000, false);
+		connection.info("Created " + lecturerCount + " random lecturers");
 	}
 
-	private void addRandomStudents(int count, String[] randomNames)
+
+	private void addRandomPeople(int count, int startingID, boolean students)
 	{
+		String[] names = randomNames.takeNames(count * 2);
+		int lastID = startingID;
+
+		for (int i = 0; i < names.length - 1; i += 2)
+		{
+			int id = lastID++;
+			int titleID = Utils.RANDOM.nextInt(titleCount) + 1;
+			String forename = names[i];
+			String surname = names[i + 1];
+
+			Date dob = !students ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
+			String command = students ?
+					"INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" :
+					"INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
+
+			addPerson(command, id, titleID, forename, surname, dob, "Added " + forename + " " + surname);
+		}
 
 	}
 
-	private void addStudent(int studentID, int titleID, String forename, String surname, Date dob)
+	private void addPerson(String preparedStatement, int id, int titleID, String forename, String surname, Date dob, String logMessage)
 	{
-		// todo
-	}
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement(preparedStatement);
+			ps.setInt(1, id);
+			ps.setInt(2, titleID);
+			ps.setString(3, forename);
+			ps.setString(4, surname);
+			if (dob != null)
+				ps.setDate(5, dob);
 
-	private void addLecturer(int lecturerID, int titleID, String forename, String surname)
-	{
-		// todo
+			ps.executeUpdate();
+			ps.close();
+
+			connection.fine(logMessage);
+
+		} catch (SQLException e)
+		{
+			connection.warning("Could not add person: " + e);
+		}
 	}
 
 
 	/**
 	 * Reads n random names from the given file
 	 *
-	 * @param names         Array to fill with random names
+	 * @param count         Number of random names to load
 	 * @param namesFilePath Path to the file from which to load random names
-	 * @return If the operation succeeded
+	 * @return A RandomNamesStream if successful, otherwise null
 	 */
-	private boolean getRandomNames(String[] names, String namesFilePath)
+	private RandomNames getRandomNames(int count, String namesFilePath)
 	{
 		File namesFile = new File(namesFilePath);
 
 		if (!Utils.validateFile(connection, namesFile))
 		{
 			connection.severe("Could not populate the database with random names");
-			return false;
+			return null;
 		}
 
 		try
@@ -103,6 +180,7 @@ public class DBCreation
 			// count line length
 			final long fileLength = countLines(namesFile);
 
+			String[] names = new String[count];
 			int nameIndex = 0;
 
 			// generate n random names
@@ -140,13 +218,12 @@ public class DBCreation
 			for (int i = 0; i < namesList.size(); i++)
 				names[i] = namesList.get(i);
 
-			return true;
-
+			return new RandomNames(names);
 
 		} catch (IOException e)
 		{
 			connection.severe("Could not load random names from " + namesFile.getPath() + ": " + e);
-			return false;
+			return null;
 		}
 	}
 
@@ -160,5 +237,34 @@ public class DBCreation
 		return count;
 	}
 
+	private class RandomNames
+	{
+		private String[] names;
+		private int index;
+
+		public RandomNames(String[] names)
+		{
+			this.names = names;
+			this.index = 0;
+		}
+
+		public String[] takeNames(int count)
+		{
+			// not enough
+			if (index + count >= names.length)
+				throw new RuntimeException("All " + names.length + " random names have been used");
+
+			String[] ret = new String[count];
+			System.arraycopy(names, index, ret, 0, count);
+			index += count;
+
+			return ret;
+		}
+
+		public int size()
+		{
+			return names == null ? 0 : names.length;
+		}
+	}
 
 }
