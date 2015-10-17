@@ -44,4 +44,17 @@ public class Config
 
 		return value;
 	}
+
+	public int getInt(String key)
+	{
+		String value = get(key);
+
+		try
+		{
+			return Integer.parseInt(value);
+		} catch (NumberFormatException e)
+		{
+			throw new IllegalArgumentException("Cannot get integer from config (" + key + "=" + value + ")");
+		}
+	}
 }

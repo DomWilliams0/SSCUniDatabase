@@ -4,17 +4,25 @@ CREATE TABLE Titles (
   titleString CHAR(16) NOT NULL
 );
 
+INSERT INTO Titles VALUES
+  (DEFAULT, 'Mr'), (DEFAULT, 'Mrs'), (DEFAULT, 'Miss'),
+  (DEFAULT, 'Ms'), (DEFAULT, 'Master'), (DEFAULT, 'Doctor'),
+  (DEFAULT, 'Professor'), (DEFAULT, 'Reverend');
+
 -- RegistrationType(registrationTypeID, description)
 CREATE TABLE RegistrationType (
   registrationTypeID SERIAL PRIMARY KEY,
   description        CHAR(16) NOT NULL
 );
 
+INSERT INTO RegistrationType VALUES
+  (DEFAULT, 'Normal'), (DEFAULT, 'Repeat'), (DEFAULT, 'Resit');
+
 
 -- Student (studentID, titleID, forename, familyName, dateOfBirth)
 CREATE TABLE Student (
   studentID   INTEGER PRIMARY KEY      CHECK (studentID > 0),
-  titleID     INTEGER REFERENCES Titles,
+  titleID INTEGER REFERENCES Titles NOT NULL,
   forename    CHAR(32) NOT NULL,
   familyName  CHAR(32) NOT NULL,
   dateOfBirth DATE     NOT NULL CHECK (dateOfBirth > '1900-01-01' :: DATE)
@@ -64,4 +72,3 @@ CREATE TABLE Tutor (
   studentID  INTEGER REFERENCES Student,
   lecturerID INTEGER REFERENCES Lecturer
 );
-

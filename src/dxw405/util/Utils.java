@@ -6,11 +6,41 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Random;
 
 public class Utils
 {
+	public static final Random RANDOM = new Random();
+
+
 	private Utils()
 	{
+	}
+
+	/**
+	 * Validates that the given file is not null and exists
+	 *
+	 * @param connection DBConnection for loggin
+	 * @param file       The file to validate
+	 * @return If the file is valid
+	 */
+	public static boolean validateFile(DBConnection connection, File file)
+	{
+		// null
+		if (file == null)
+		{
+			connection.severe("Input file is null");
+			return false;
+		}
+
+		// doesn't exist
+		if (!file.exists())
+		{
+			connection.severe("Input file doesn't exist (" + file.getPath() + ")");
+			return false;
+		}
+
+		return true;
 	}
 
 
@@ -23,19 +53,8 @@ public class Utils
 	 */
 	public static FileInputStream readFile(DBConnection connection, File file)
 	{
-		// null
-		if (file == null)
-		{
-			connection.severe("Input file is null");
+		if (!validateFile(connection, file))
 			return null;
-		}
-
-		// doesn't exist
-		if (!file.exists())
-		{
-			connection.severe("Input file doesn't exist (" + file.getPath() + ")");
-			return null;
-		}
 
 		FileInputStream stream;
 		try

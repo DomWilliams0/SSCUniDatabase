@@ -230,12 +230,39 @@ public class DBConnection
 	 */
 	public String getSQLPath(String sqlFile)
 	{
-		return getFromConfig("sql-dir") + File.separator + getFromConfig(sqlFile) + ".sql";
+		return getPath("sql-dir", sqlFile, ".sql");
 	}
 
-	private String getFromConfig(String key)
+	/**
+	 * Gets the relative path to the resource file corresponding to the given config key
+	 *
+	 * @param resFile Config key for resource file
+	 * @return Relative path
+	 */
+	public String getResourcePath(String resFile)
+	{
+		return getPath("res-dir", resFile, null);
+	}
+
+	/**
+	 * @param prefixKey Config key for prefix
+	 * @param fileKey   Config key for file
+	 * @param extension Optional file extension, null for none
+	 * @return [prefix]/[file][extension]
+	 */
+	public String getPath(String prefixKey, String fileKey, String extension)
+	{
+		return getStringFromConfig(prefixKey) + File.separator + getStringFromConfig(fileKey) + (extension == null ? "" : extension);
+	}
+
+	public String getStringFromConfig(String key)
 	{
 		return config.get(key);
+	}
+
+	public int getIntFromConfig(String key)
+	{
+		return config.getInt(key);
 	}
 }
 
