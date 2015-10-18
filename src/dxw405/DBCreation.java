@@ -123,6 +123,9 @@ public class DBCreation
 			addContacts();
 			addNextOfKins();
 
+			// tutors
+			addTutors();
+
 		} catch (SQLException e)
 		{
 			connection.severe("Could not populate tables: " + e);
@@ -130,6 +133,80 @@ public class DBCreation
 		}
 
 
+	}
+
+	/**
+	 * Assigns a lecturer at random to every student
+	 */
+	private void addTutors() throws SQLException
+	{
+		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
+		List<Integer> lecturerIDs = personIDs.get(Person.LECTURER);
+		final int studentCount = studentIDs.size();
+		final int lecturerCount = lecturerIDs.size();
+
+		int classSize = studentCount / lecturerCount;
+
+		Map<Integer, List<Integer>> tutorGroups = new HashMap<>();
+
+		// add equal sized classes
+		for (int i = 0; i < lecturerCount; i++)
+		{
+			Integer lecturerID = lecturerIDs.get(i);
+			List<Integer> students = new ArrayList<>(classSize);
+
+			for (int j = 0; j < classSize; j++)
+			{
+				Integer studentID = studentIDs.get((i * classSize) + j);
+				students.add(studentID);
+			}
+
+			tutorGroups.put(lecturerID, students);
+		}
+
+		// put remaining in random classes
+		int remaining = (studentCount - (classSize * lecturerCount));
+		if (remaining != 0)
+		{
+			connection.fine("Adding " + remaining + " overflow students to random tutor groups");
+
+			for (int i = 0; i < remaining; i++)
+			{
+				Integer studentID = studentIDs.get(studentCount - i - 1);
+				Integer lecturerID = lecturerIDs.get(Utils.RANDOM.nextInt(lecturerCount));
+
+				List<Integer> students = tutorGroups.get(lecturerID);
+				boolean replaceCurrent = students == null;
+				if (replaceCurrent)
+					students = new ArrayList<>(1);
+
+				students.add(studentID);
+
+				if (replaceCurrent)
+					tutorGroups.put(lecturerID, students);
+			}
+
+		}
+
+		// execute statements
+		PreparedStatement ps = connection.prepareStatement("INSERT INTO Tutor (studentID, lecturerID) VALUES (?, ?)");
+		for (Map.Entry<Integer, List<Integer>> entry : tutorGroups.entrySet())
+		{
+			Integer lecturerID = entry.getKey();
+			ps.setInt(2, lecturerID);
+
+			List<Integer> students = entry.getValue();
+			Collections.shuffle(students);
+
+			for (Integer studentID : students)
+			{
+				ps.setInt(1, studentID);
+				ps.addBatch();
+			}
+		}
+
+		ps.executeBatch();
+		ps.close();
 	}
 
 	private void addNextOfKins() throws SQLException
@@ -152,13 +229,14 @@ public class DBCreation
 			ps.setString(3, email);
 			ps.setString(4, address);
 
-			ps.executeUpdate();
+			ps.addBatch();
 
 			connection.fine("Added next of kin for " + studentID);
 
 			nameIndex += 2;
 		}
 
+		ps.executeBatch();
 		ps.close();
 
 		connection.info("Added " + studentIDs.size() + " next-of-kins");
@@ -193,11 +271,12 @@ public class DBCreation
 			ps.setString(2, secondValue.generate());
 			ps.setString(3, thirdValue.generate());
 
-			ps.executeUpdate();
+			ps.addBatch();
 
 			connection.fine("Added contact for " + id);
 		}
 
+		ps.executeBatch();
 		ps.close();
 
 		connection.info("Added " + ids.size() + " " + person.getTableName().toLowerCase() + "s");
@@ -222,12 +301,13 @@ public class DBCreation
 			ps.setInt(2, yearOfStudy);
 			ps.setInt(3, regType);
 
-			ps.executeUpdate();
+			ps.addBatch();
 
 			connection.fine("Added StudentRegistration for " + studentID);
 
 		}
 
+		ps.executeBatch();
 		ps.close();
 
 
@@ -269,12 +349,13 @@ public class DBCreation
 			if (dob != null)
 				ps.setDate(5, dob);
 
-			ps.executeUpdate();
+			ps.addBatch();
 			ids.add(id);
 
 			connection.fine("Added " + person.getTableName().toLowerCase() + " " + forename + " " + surname);
 		}
 
+		ps.executeBatch();
 		ps.close();
 
 	}
