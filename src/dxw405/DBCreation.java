@@ -1,15 +1,12 @@
 package dxw405;
 
+import dxw405.util.Person;
 import dxw405.util.Utils;
 
 import java.io.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.sql.*;
+import java.util.*;
 import java.util.logging.Level;
 
 /**
@@ -25,6 +22,8 @@ public class DBCreation
 
 	private int titleCount;
 	private int registrationTypeCount;
+
+	private EnumMap<Person, List<Integer>> personIDs;
 
 	public DBCreation(DBConnection connection)
 	{
@@ -82,7 +81,7 @@ public class DBCreation
 	}
 
 	/**
-	 * Populates the tables with randomly generated ata
+	 * Populates the tables with randomly generated data
 	 */
 	public void populateTables()
 	{
@@ -104,15 +103,93 @@ public class DBCreation
 
 
 		// create students and lecturers
-		addRandomPeople(studentCount, 1433000, true);
+		addRandomPeople(studentCount, 1433000, Person.STUDENT);
 		connection.info("Created " + studentCount + " random students");
 
-		addRandomPeople(lecturerCount, 1000, false);
+		addRandomPeople(lecturerCount, 1000, Person.LECTURER);
 		connection.info("Created " + lecturerCount + " random lecturers");
+
+		// cache ids for further use
+		personIDs = gatherIDs();
+
+		// student registrations
+		addStudentRegistrations();
+	}
+
+	private void addStudentRegistrations()
+	{
+		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
+		String cmd = "INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)";
+		PreparedStatement ps;
+		try
+		{
+			ps = connection.prepareStatement(cmd);
+
+			for (Integer studentID : studentIDs)
+			{
+				int yearOfStudy = Utils.RANDOM.nextInt(5) + 1;
+				int regType = Utils.RANDOM.nextInt(registrationTypeCount) + 1;
+
+				try
+				{
+					ps.setInt(1, studentID);
+					ps.setInt(2, yearOfStudy);
+					ps.setInt(3, regType);
+
+					ps.executeUpdate();
+
+					connection.fine("Added StudentRegistration for " + studentID);
+
+				} catch (SQLException e)
+				{
+					connection.severe("Could not add student registration: " + e);
+				}
+			}
+
+			ps.close();
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not create/close PrepareStatement for student registrations: " + e);
+			return;
+		}
+
+		connection.info("Registered " + studentIDs.size() + " students");
+	}
+
+	private EnumMap<Person, List<Integer>> gatherIDs()
+	{
+		try
+		{
+			Statement statement = connection.createStatement();
+			String query = "SELECT %s FROM %s";
+
+			EnumMap<Person, List<Integer>> ret = new EnumMap<>(Person.class);
+
+			for (Person p : Person.values())
+			{
+				ResultSet resultSet = statement.executeQuery(String.format(query, p.getIDName(), p.getTableName()));
+				List<Integer> ids = new ArrayList<>();
+
+				while (resultSet.next())
+					ids.add(resultSet.getInt(1));
+
+				ret.put(p, ids);
+			}
+
+			statement.close();
+
+			return ret;
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not gather IDs: " + e);
+			return null;
+		}
 	}
 
 
-	private void addRandomPeople(int count, int startingID, boolean students)
+	private void addRandomPeople(int count, int startingID, Person person)
 	{
 		String[] names = randomNames.takeNames(count * 2);
 		int lastID = startingID;
@@ -124,8 +201,8 @@ public class DBCreation
 			String forename = names[i];
 			String surname = names[i + 1];
 
-			Date dob = !students ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
-			String command = students ?
+			Date dob = person == Person.LECTURER ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
+			String command = person == Person.STUDENT ?
 					"INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" :
 					"INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
 
