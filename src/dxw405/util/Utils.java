@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Random;
+import java.util.logging.Level;
 
 public class Utils
 {
@@ -94,6 +95,23 @@ public class Utils
 	public static String capitalise(String s)
 	{
 		return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
+	}
+
+	/**
+	 * Converts a string to a log level
+	 *
+	 * @param s String to parse
+	 * @return The corresponding log level, or null if invalid
+	 */
+	public static Level stringToLevel(String s)
+	{
+		try
+		{
+			return Level.parse(s.toUpperCase());
+		} catch (IllegalArgumentException e)
+		{
+			return null;
+		}
 	}
 
 

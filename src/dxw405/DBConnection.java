@@ -2,6 +2,7 @@ package dxw405;
 
 import dxw405.util.Config;
 import dxw405.util.SQLFileParser;
+import dxw405.util.Utils;
 
 import java.io.File;
 import java.sql.*;
@@ -34,7 +35,7 @@ public class DBConnection
 		DBDetails details = new DBDetails(config);
 
 		// logger
-		initLogger(logLevel, details.dbName);
+		initLogger(details.dbName);
 
 		// db connection
 		boolean connectionSuccess = createConnection(details);
@@ -67,12 +68,17 @@ public class DBConnection
 
 
 	/**
-	 * @param logLevel The logger's log level
 	 * @param name     The logger's name
 	 */
-	private void initLogger(Level logLevel, String name)
+	private void initLogger(String name)
 	{
 		logger = Logger.getLogger(name);
+
+		Level logLevel = Utils.stringToLevel(config.get("log-level"));
+		boolean logLevelFailure = logLevel == null;
+		if (logLevelFailure)
+			logLevel = Level.INFO;
+
 		logger.setLevel(logLevel);
 
 		// log formatting
@@ -84,6 +90,9 @@ public class DBConnection
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setLevel(logLevel);
 		logger.addHandler(handler);
+
+		if (logLevelFailure)
+			warning("Invalid log level provided in config, reverting to INFO");
 	}
 
 	/**
