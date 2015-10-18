@@ -117,19 +117,60 @@ public class DBCreation
 		// student registrations
 		addStudentRegistrations();
 
-		// contacts
-		addPeopleContacts();
+		// contacts and kin
+		addContacts();
+		addNextOfKins();
+
+	}
+
+	private void addNextOfKins()
+	{
+		try
+		{
+			List<Integer> studentIDs = personIDs.get(Person.STUDENT);
+			String[] names = randomNames.takeNames(studentIDs.size() * 2);
+
+			String cmd = "INSERT INTO NextOfKin (studentID, name, eMailAddress, postalAddress) VALUES (?, ?, ?, ?)";
+			PreparedStatement ps = connection.prepareStatement(cmd);
+
+			RandomGenerator.RandomEmail emailGen = new RandomGenerator.RandomEmail();
+			RandomGenerator.RandomAddress postalGen = new RandomGenerator.RandomAddress();
+
+			int nameIndex = 0;
+			for (Integer studentID : studentIDs)
+			{
+				String name = names[nameIndex] + " " + names[nameIndex + 1];
+				String email = emailGen.generate();
+				String address = postalGen.generate();
+
+				ps.setInt(1, studentID);
+				ps.setString(2, name);
+				ps.setString(3, email);
+				ps.setString(4, address);
+
+				ps.executeUpdate();
+
+				nameIndex += 2;
+			}
+
+			ps.close();
+
+		} catch (SQLException e)
+		{
+			e.printStackTrace();
+		}
 
 	}
 
 	/**
 	 * Creates random Student/LecturerContacts for every person
 	 */
-	private void addPeopleContacts()
+	private void addContacts()
 	{
 		try
 		{
-			addContacts(Person.STUDENT, new RandomGenerator.RandomEmail(), new RandomGenerator.RandomAddress());
+			// todo reuse gens
+			addContacts(Person.STUDENT, new RandomGenerator.RandomBhamEmail(), new RandomGenerator.RandomAddress());
 			addContacts(Person.LECTURER, new RandomGenerator.RandomOffice(), new RandomGenerator.RandomBhamEmail());
 
 		} catch (SQLException e)

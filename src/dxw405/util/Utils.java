@@ -85,5 +85,16 @@ public class Utils
 		}
 	}
 
+	/**
+	 * Capitalises a string
+	 *
+	 * @param s The string to capitalise
+	 * @return First letter capitalised, the rest lowercase
+	 */
+	public static String capitalise(String s)
+	{
+		return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
+	}
+
 
 }

@@ -61,7 +61,7 @@ public interface RandomGenerator
 		public String generate()
 		{
 			return String.format("%03d %s %s", Utils.RANDOM.nextInt(1000),
-					randomString(5),
+					Utils.capitalise(randomString(5)),
 					POSTAL_SUFFIXES[Utils.RANDOM.nextInt(POSTAL_SUFFIXES.length)]);
 		}
 	}
