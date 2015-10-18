@@ -1,11 +1,14 @@
 package dxw405;
 
 import dxw405.util.Person;
+import dxw405.util.RandomGenerator;
 import dxw405.util.Utils;
 
 import java.io.*;
 import java.sql.Date;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 
@@ -29,7 +32,10 @@ public class DBCreation
 	{
 		this.connection = connection;
 		this.randomNames = null;
+		this.personIDs = new EnumMap<>(Person.class);
 
+		for (Person p : Person.values())
+			personIDs.put(p, new ArrayList<>());
 	}
 
 	private void countEnums()
@@ -103,27 +109,71 @@ public class DBCreation
 
 
 		// create students and lecturers
-		addRandomPeople(studentCount, 1433000, Person.STUDENT);
+		addRandomPeople(Person.STUDENT, studentCount, 1433000);
 		connection.info("Created " + studentCount + " random students");
-
-		addRandomPeople(lecturerCount, 1000, Person.LECTURER);
+		addRandomPeople(Person.LECTURER, lecturerCount, 1000);
 		connection.info("Created " + lecturerCount + " random lecturers");
-
-		// cache ids for further use
-		personIDs = gatherIDs();
 
 		// student registrations
 		addStudentRegistrations();
+
+		// contacts
+		addPeopleContacts();
+
 	}
 
+	/**
+	 * Creates random Student/LecturerContacts for every person
+	 */
+	private void addPeopleContacts()
+	{
+		try
+		{
+			addContacts(Person.STUDENT, new RandomGenerator.RandomEmail(), new RandomGenerator.RandomAddress());
+			addContacts(Person.LECTURER, new RandomGenerator.RandomOffice(), new RandomGenerator.RandomBhamEmail());
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not add contacts: " + e);
+		}
+
+	}
+
+	/**
+	 * Adds a Student/LecturerContact
+	 *
+	 * @param person      Person type
+	 * @param secondValue 2nd column value
+	 * @param thirdValue  3rd column value
+	 */
+	private void addContacts(Person person, RandomGenerator secondValue, RandomGenerator thirdValue) throws SQLException
+	{
+		final String query = "INSERT INTO %s VALUES (?, ?, ?)";
+		PreparedStatement ps = connection.prepareStatement(String.format(query, person.getContactTableName()));
+
+		for (Integer id : personIDs.get(person))
+		{
+			ps.setInt(1, id);
+			ps.setString(2, secondValue.generate());
+			ps.setString(3, thirdValue.generate());
+
+			ps.executeUpdate();
+		}
+
+		ps.close();
+	}
+
+
+	/**
+	 * Generates a random StudentRegistration for every student
+	 */
 	private void addStudentRegistrations()
 	{
 		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
 		String cmd = "INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)";
-		PreparedStatement ps;
 		try
 		{
-			ps = connection.prepareStatement(cmd);
+			PreparedStatement ps = connection.prepareStatement(cmd);
 
 			for (Integer studentID : studentIDs)
 			{
@@ -157,81 +207,55 @@ public class DBCreation
 		connection.info("Registered " + studentIDs.size() + " students");
 	}
 
-	private EnumMap<Person, List<Integer>> gatherIDs()
+	/**
+	 * Generates random people
+	 *
+	 * @param person     Person type
+	 * @param count      Number of people to generate
+	 * @param startingID Person ID to start at
+	 */
+	private void addRandomPeople(Person person, int count, int startingID)
 	{
 		try
 		{
-			Statement statement = connection.createStatement();
-			String query = "SELECT %s FROM %s";
-
-			EnumMap<Person, List<Integer>> ret = new EnumMap<>(Person.class);
-
-			for (Person p : Person.values())
-			{
-				ResultSet resultSet = statement.executeQuery(String.format(query, p.getIDName(), p.getTableName()));
-				List<Integer> ids = new ArrayList<>();
-
-				while (resultSet.next())
-					ids.add(resultSet.getInt(1));
-
-				ret.put(p, ids);
-			}
-
-			statement.close();
-
-			return ret;
-
-		} catch (SQLException e)
-		{
-			connection.severe("Could not gather IDs: " + e);
-			return null;
-		}
-	}
-
-
-	private void addRandomPeople(int count, int startingID, Person person)
-	{
-		String[] names = randomNames.takeNames(count * 2);
-		int lastID = startingID;
-
-		for (int i = 0; i < names.length - 1; i += 2)
-		{
-			int id = lastID++;
-			int titleID = Utils.RANDOM.nextInt(titleCount) + 1;
-			String forename = names[i];
-			String surname = names[i + 1];
-
-			Date dob = person == Person.LECTURER ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
 			String command = person == Person.STUDENT ?
 					"INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" :
 					"INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
+			PreparedStatement ps = connection.prepareStatement(command);
 
-			addPerson(command, id, titleID, forename, surname, dob, "Added " + forename + " " + surname);
-		}
+			String[] names = randomNames.takeNames(count * 2);
+			int lastID = startingID;
+			List<Integer> ids = personIDs.get(person);
 
-	}
+			for (int i = 0; i < names.length - 1; i += 2)
+			{
+				// generate stats
+				int id = lastID++;
+				int titleID = Utils.RANDOM.nextInt(titleCount) + 1;
+				String forename = names[i];
+				String surname = names[i + 1];
+				Date dob = person == Person.LECTURER ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
 
-	private void addPerson(String preparedStatement, int id, int titleID, String forename, String surname, Date dob, String logMessage)
-	{
-		try
-		{
-			PreparedStatement ps = connection.prepareStatement(preparedStatement);
-			ps.setInt(1, id);
-			ps.setInt(2, titleID);
-			ps.setString(3, forename);
-			ps.setString(4, surname);
-			if (dob != null)
-				ps.setDate(5, dob);
+				// execute
+				ps.setInt(1, id);
+				ps.setInt(2, titleID);
+				ps.setString(3, forename);
+				ps.setString(4, surname);
+				if (dob != null)
+					ps.setDate(5, dob);
 
-			ps.executeUpdate();
+				ps.executeUpdate();
+				ids.add(id);
+
+				connection.fine("Added " + person.getTableName() + " " + forename + " " + surname);
+			}
+
 			ps.close();
-
-			connection.fine(logMessage);
-
 		} catch (SQLException e)
 		{
-			connection.warning("Could not add person: " + e);
+			connection.severe("Could not add random people (" + person.getTableName() + "): " + e);
 		}
+
 	}
 
 
@@ -314,6 +338,9 @@ public class DBCreation
 		return count;
 	}
 
+	/**
+	 * Pool for random names, which holds a fixed number of names randomly chosen from a file of names
+	 */
 	private class RandomNames
 	{
 		private String[] names;
