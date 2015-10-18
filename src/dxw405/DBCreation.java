@@ -108,76 +108,70 @@ public class DBCreation
 		connection.fine("Loaded " + randomNames.size() + " random names");
 
 
-		// create students and lecturers
-		addRandomPeople(Person.STUDENT, studentCount, 1433000);
-		connection.info("Created " + studentCount + " random students");
-		addRandomPeople(Person.LECTURER, lecturerCount, 1000);
-		connection.info("Created " + lecturerCount + " random lecturers");
-
-		// student registrations
-		addStudentRegistrations();
-
-		// contacts and kin
-		addContacts();
-		addNextOfKins();
-
-	}
-
-	private void addNextOfKins()
-	{
 		try
 		{
-			List<Integer> studentIDs = personIDs.get(Person.STUDENT);
-			String[] names = randomNames.takeNames(studentIDs.size() * 2);
+			// create students and lecturers
+			addRandomPeople(Person.STUDENT, studentCount, 1433000);
+			connection.info("Created " + studentCount + " random students");
+			addRandomPeople(Person.LECTURER, lecturerCount, 1000);
+			connection.info("Created " + lecturerCount + " random lecturers");
 
-			String cmd = "INSERT INTO NextOfKin (studentID, name, eMailAddress, postalAddress) VALUES (?, ?, ?, ?)";
-			PreparedStatement ps = connection.prepareStatement(cmd);
+			// student registrations
+			addStudentRegistrations();
 
-			RandomGenerator.RandomEmail emailGen = new RandomGenerator.RandomEmail();
-			RandomGenerator.RandomAddress postalGen = new RandomGenerator.RandomAddress();
-
-			int nameIndex = 0;
-			for (Integer studentID : studentIDs)
-			{
-				String name = names[nameIndex] + " " + names[nameIndex + 1];
-				String email = emailGen.generate();
-				String address = postalGen.generate();
-
-				ps.setInt(1, studentID);
-				ps.setString(2, name);
-				ps.setString(3, email);
-				ps.setString(4, address);
-
-				ps.executeUpdate();
-
-				nameIndex += 2;
-			}
-
-			ps.close();
+			// contacts and kin
+			addContacts();
+			addNextOfKins();
 
 		} catch (SQLException e)
 		{
+			connection.severe("Could not populate tables: " + e);
 			e.printStackTrace();
 		}
+
+
+	}
+
+	private void addNextOfKins() throws SQLException
+	{
+		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
+		String[] names = randomNames.takeNames(studentIDs.size() * 2);
+
+		String cmd = "INSERT INTO NextOfKin (studentID, name, eMailAddress, postalAddress) VALUES (?, ?, ?, ?)";
+		PreparedStatement ps = connection.prepareStatement(cmd);
+
+		int nameIndex = 0;
+		for (Integer studentID : studentIDs)
+		{
+			String name = names[nameIndex] + " " + names[nameIndex + 1];
+			String email = RandomGenerator.GEN_EMAIL.generate();
+			String address = RandomGenerator.GEN_POSTAL.generate();
+
+			ps.setInt(1, studentID);
+			ps.setString(2, name);
+			ps.setString(3, email);
+			ps.setString(4, address);
+
+			ps.executeUpdate();
+
+			connection.fine("Added next of kin for " + studentID);
+
+			nameIndex += 2;
+		}
+
+		ps.close();
+
+		connection.info("Added " + studentIDs.size() + " next-of-kins");
 
 	}
 
 	/**
 	 * Creates random Student/LecturerContacts for every person
 	 */
-	private void addContacts()
+	private void addContacts() throws SQLException
 	{
-		try
-		{
-			// todo reuse gens
-			addContacts(Person.STUDENT, new RandomGenerator.RandomBhamEmail(), new RandomGenerator.RandomAddress());
-			addContacts(Person.LECTURER, new RandomGenerator.RandomOffice(), new RandomGenerator.RandomBhamEmail());
-
-		} catch (SQLException e)
-		{
-			connection.severe("Could not add contacts: " + e);
-		}
-
+		addContacts(Person.STUDENT, RandomGenerator.GEN_EMAIL_BHAM, RandomGenerator.GEN_POSTAL);
+		addContacts(Person.LECTURER, RandomGenerator.GEN_OFFICE, RandomGenerator.GEN_EMAIL_BHAM);
 	}
 
 	/**
@@ -192,58 +186,50 @@ public class DBCreation
 		final String query = "INSERT INTO %s VALUES (?, ?, ?)";
 		PreparedStatement ps = connection.prepareStatement(String.format(query, person.getContactTableName()));
 
-		for (Integer id : personIDs.get(person))
+		List<Integer> ids = personIDs.get(person);
+		for (Integer id : ids)
 		{
 			ps.setInt(1, id);
 			ps.setString(2, secondValue.generate());
 			ps.setString(3, thirdValue.generate());
 
 			ps.executeUpdate();
+
+			connection.fine("Added contact for " + id);
 		}
 
 		ps.close();
+
+		connection.info("Added " + ids.size() + " " + person.getTableName().toLowerCase() + "s");
 	}
 
 
 	/**
 	 * Generates a random StudentRegistration for every student
 	 */
-	private void addStudentRegistrations()
+	private void addStudentRegistrations() throws SQLException
 	{
 		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
 		String cmd = "INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)";
-		try
+		PreparedStatement ps = connection.prepareStatement(cmd);
+
+		for (Integer studentID : studentIDs)
 		{
-			PreparedStatement ps = connection.prepareStatement(cmd);
+			int yearOfStudy = Utils.RANDOM.nextInt(5) + 1;
+			int regType = Utils.RANDOM.nextInt(registrationTypeCount) + 1;
 
-			for (Integer studentID : studentIDs)
-			{
-				int yearOfStudy = Utils.RANDOM.nextInt(5) + 1;
-				int regType = Utils.RANDOM.nextInt(registrationTypeCount) + 1;
+			ps.setInt(1, studentID);
+			ps.setInt(2, yearOfStudy);
+			ps.setInt(3, regType);
 
-				try
-				{
-					ps.setInt(1, studentID);
-					ps.setInt(2, yearOfStudy);
-					ps.setInt(3, regType);
+			ps.executeUpdate();
 
-					ps.executeUpdate();
+			connection.fine("Added StudentRegistration for " + studentID);
 
-					connection.fine("Added StudentRegistration for " + studentID);
-
-				} catch (SQLException e)
-				{
-					connection.severe("Could not add student registration: " + e);
-				}
-			}
-
-			ps.close();
-
-		} catch (SQLException e)
-		{
-			connection.severe("Could not create/close PrepareStatement for student registrations: " + e);
-			return;
 		}
+
+		ps.close();
+
 
 		connection.info("Registered " + studentIDs.size() + " students");
 	}
@@ -255,47 +241,41 @@ public class DBCreation
 	 * @param count      Number of people to generate
 	 * @param startingID Person ID to start at
 	 */
-	private void addRandomPeople(Person person, int count, int startingID)
+	private void addRandomPeople(Person person, int count, int startingID) throws SQLException
 	{
-		try
+		String command = person == Person.STUDENT ?
+				"INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" :
+				"INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
+		PreparedStatement ps = connection.prepareStatement(command);
+
+		String[] names = randomNames.takeNames(count * 2);
+		int lastID = startingID;
+		List<Integer> ids = personIDs.get(person);
+
+		for (int i = 0; i < names.length - 1; i += 2)
 		{
-			String command = person == Person.STUDENT ?
-					"INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" :
-					"INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
-			PreparedStatement ps = connection.prepareStatement(command);
+			// generate stats
+			int id = lastID++;
+			int titleID = Utils.RANDOM.nextInt(titleCount) + 1;
+			String forename = names[i];
+			String surname = names[i + 1];
+			Date dob = person == Person.LECTURER ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
 
-			String[] names = randomNames.takeNames(count * 2);
-			int lastID = startingID;
-			List<Integer> ids = personIDs.get(person);
+			// execute
+			ps.setInt(1, id);
+			ps.setInt(2, titleID);
+			ps.setString(3, forename);
+			ps.setString(4, surname);
+			if (dob != null)
+				ps.setDate(5, dob);
 
-			for (int i = 0; i < names.length - 1; i += 2)
-			{
-				// generate stats
-				int id = lastID++;
-				int titleID = Utils.RANDOM.nextInt(titleCount) + 1;
-				String forename = names[i];
-				String surname = names[i + 1];
-				Date dob = person == Person.LECTURER ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
+			ps.executeUpdate();
+			ids.add(id);
 
-				// execute
-				ps.setInt(1, id);
-				ps.setInt(2, titleID);
-				ps.setString(3, forename);
-				ps.setString(4, surname);
-				if (dob != null)
-					ps.setDate(5, dob);
-
-				ps.executeUpdate();
-				ids.add(id);
-
-				connection.fine("Added " + person.getTableName() + " " + forename + " " + surname);
-			}
-
-			ps.close();
-		} catch (SQLException e)
-		{
-			connection.severe("Could not add random people (" + person.getTableName() + "): " + e);
+			connection.fine("Added " + person.getTableName().toLowerCase() + " " + forename + " " + surname);
 		}
+
+		ps.close();
 
 	}
 
