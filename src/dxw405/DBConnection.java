@@ -11,7 +11,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class DBConnection
+public class DBConnection implements AutoCloseable
 {
 	private Connection connection;
 	private SQLFileParser fileParser;
@@ -20,11 +20,9 @@ public class DBConnection
 
 
 	/**
-	 * @param logLevel   Log level for the logger
 	 * @param configFile Path to the config file
-	 * @param dropAll    Whether to drop all tables in the database or not
 	 */
-	public DBConnection(Level logLevel, String configFile, boolean dropAll)
+	public DBConnection(String configFile)
 	{
 		// config
 		config = new Config(this);
@@ -44,15 +42,6 @@ public class DBConnection
 
 		// file parser
 		fileParser = new SQLFileParser(this);
-
-
-		// drop all tables
-		if (dropAll)
-		{
-			boolean success = executeUpdate("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-			if (success)
-				logger.info("Dropped all tables");
-		}
 	}
 
 	/**
@@ -246,6 +235,7 @@ public class DBConnection
 		try
 		{
 			connection.close();
+			logger.info("Closed database connection");
 		} catch (SQLException e)
 		{
 			logger.severe("Could not close connection:" + e);

@@ -77,9 +77,15 @@ public class DBCreation
 	 */
 	public void createTables()
 	{
+		// drop tables first
+		boolean success = connection.executeUpdate("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+		if (success)
+			connection.info("Dropped all tables");
+
+		// load and execute table creation commands
 		String inputFile = connection.getSQLPath("sql-create-tables");
 
-		boolean success = connection.executeFile(new File(inputFile), Level.INFO);
+		success = connection.executeFile(new File(inputFile), Level.INFO);
 		if (success)
 			connection.info("Created tables successfully from (" + inputFile + ")");
 
