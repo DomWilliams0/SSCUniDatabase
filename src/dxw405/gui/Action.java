@@ -12,15 +12,5 @@ public enum Action
 	VISIBLE_LECTURERS,
 
 	REPORT_STUDENT,
-	REPORT_TUTOR;
-
-	public static Action parse(String s)
-	{
-		for (Action action : values())
-			if (action.toString().equals(s))
-				return action;
-
-		return null;
-	}
-
+	REPORT_TUTOR
 }

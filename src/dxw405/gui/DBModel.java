@@ -2,6 +2,7 @@ package dxw405.gui;
 
 import dxw405.DBConnection;
 import dxw405.util.Person;
+import dxw405.util.Utils;
 
 import java.io.File;
 import java.sql.Date;
@@ -54,9 +55,10 @@ public class DBModel extends Observable
 
 				while (resultSet.next())
 				{
-					Person person = Person.parse(resultSet.getString(1));
+					String personType = resultSet.getString(1);
+					Person person = Utils.parseEnum(Person.class, personType);
 					if (person == null)
-						throw new SQLException("Bad person type specified in query (" + resultSet.getString(1) + ")");
+						throw new SQLException("Bad person type specified in query (" + personType + ")");
 
 					int id = resultSet.getInt(2);
 					String title = resultSet.getString(3).trim();

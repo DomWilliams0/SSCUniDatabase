@@ -1,5 +1,7 @@
 package dxw405.gui;
 
+import dxw405.util.Utils;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -30,7 +32,7 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 	@Override
 	public void actionPerformed(ActionEvent e)
 	{
-		Action a = Action.parse(e.getActionCommand());
+		Action a = Utils.parseEnum(Action.class, e.getActionCommand());
 		if (a == null)
 			return;
 

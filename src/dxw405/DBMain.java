@@ -1,27 +1,14 @@
 package dxw405;
 
 import dxw405.gui.DBGui;
+import dxw405.util.Utils;
 
 public class DBMain
 {
 	enum Command
 	{
 		CREATE,
-		GUI;
-
-		/**
-		 * @param s String to parse into a command
-		 * @return The command corresponding to the given string, otherwise null
-		 */
-		public static Command parse(String s)
-		{
-			for (Command command : values())
-				if (command.toString().equalsIgnoreCase(s))
-					return command;
-
-			return null;
-		}
-
+		GUI
 	}
 
 	public void run(String[] args)
@@ -30,7 +17,7 @@ public class DBMain
 		if (args.length != 1)
 			exit(getUsage());
 
-		Command cmd = Command.parse(args[0]);
+		Command cmd = Utils.parseEnum(Command.class, args[0]);
 
 		// invalid command
 		if (cmd == null)

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.EnumSet;
 import java.util.Random;
 import java.util.logging.Level;
 
@@ -112,6 +113,23 @@ public class Utils
 		{
 			return null;
 		}
+	}
+
+	/**
+	 * Converts a String into an Enum
+	 *
+	 * @param enumClass The enum
+	 * @param s         The string to parse
+	 * @return The corresponding enum value, or null if none was found
+	 */
+	public static <E extends Enum<E>> E parseEnum(Class<E> enumClass, String s)
+	{
+		EnumSet<E> values = EnumSet.allOf(enumClass);
+		String upper = s.toUpperCase();
+		for (E value : values)
+			if (value.toString().equals(upper))
+				return value;
+		return null;
 	}
 
 
