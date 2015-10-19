@@ -15,6 +15,8 @@ import java.util.logging.Level;
 
 public class DBModel extends Observable
 {
+	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "DOB"};
+
 	private DBConnection connection;
 	private List<PersonEntry> tableEntries;
 
@@ -33,18 +35,23 @@ public class DBModel extends Observable
 	{
 		tableEntries.clear();
 
-		boolean success = addEntries(connection.getSQLPath("sql-populate-tables"));
-		// todo: dialog box if unsuccessful
+		String errorMessage = addEntries(connection.getSQLPath("sql-populate-tables"));
 
 		setChanged();
-		notifyObservers();
+		notifyObservers(errorMessage);
 	}
 
-	private boolean addEntries(String sqlFile)
+	/**
+	 * Executes the queries in the given file, parses the results and adds them to the table entry list
+	 *
+	 * @param sqlFile Input SQL file
+	 * @return The error message if any, otherwise null if successful
+	 */
+	private String addEntries(String sqlFile)
 	{
 		ResultSet[] allResults = connection.executeQueriesFromFile(new File(sqlFile), Level.INFO);
 		if (allResults == null)
-			return false;
+			return null;
 
 		try
 		{
@@ -72,19 +79,34 @@ public class DBModel extends Observable
 						dob = new java.util.Date(sqlDOB.getTime());
 					}
 
-					String fullName = String.format("%s. %s %s", title, forename, surname);
-
-					tableEntries.add(new PersonEntry(person, id, fullName, dob));
+					tableEntries.add(new PersonEntry(person, id, title, forename, surname, dob));
 				}
 			}
 
-			return true;
+			return null;
 		} catch (SQLException e)
 		{
 			connection.severe("Could not retrieve entries: " + e);
-			return false;
+			return e.getMessage();
 		}
 
 
+	}
+
+	public Object[] getTableColumns()
+	{
+		return COLUMNS;
+	}
+
+	/**
+	 * Convert an entry to a row, specified by the columns
+	 *
+	 * @param entry The entry to convert
+	 * @return A row
+	 */
+	public Object[] asRow(PersonEntry entry)
+	{
+		String dob = entry.dob == null ? "-" : DBTableComponent.formatDate(entry.dob);
+		return new Object[]{entry.id, entry.title, entry.forename, entry.surname, dob};
 	}
 }

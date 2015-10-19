@@ -9,9 +9,12 @@ import java.awt.event.ActionListener;
 
 public class DBOverviewComponent extends JPanel implements ActionListener
 {
+	private DBModel model;
+
 	public DBOverviewComponent(DBModel model)
 	{
 		super(new BorderLayout());
+		this.model = model;
 
 		// data table
 		DBTableComponent tableComponent = new DBTableComponent(model);
@@ -23,8 +26,13 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 
 		// model observers
 		model.addObserver(tableComponent);
+	}
 
-		// populate table initially
+	/**
+	 * Initiate all components
+	 */
+	public void init()
+	{
 		model.populateTable();
 	}
 

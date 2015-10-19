@@ -15,7 +15,7 @@ public class DBGui
 
 		// create components
 		DBModel model = new DBModel(connection);
-		DBOverviewComponent overviewComponent = new DBOverviewComponent(model);
+		DBOverviewComponent controller = new DBOverviewComponent(model);
 
 		// create frame
 		JFrame frame = new JFrame("University Database Management");
@@ -33,9 +33,10 @@ public class DBGui
 		frame.setLocationRelativeTo(null);
 		frame.setResizable(false);
 
-		frame.add(overviewComponent);
+		frame.add(controller);
 		frame.setVisible(true);
 
+		controller.init();
 	}
 
 	private void prettifyUI(DBConnection connection)
