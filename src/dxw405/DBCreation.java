@@ -119,7 +119,7 @@ public class DBCreation
 			// create students and lecturers
 			addRandomPeople(Person.STUDENT, studentCount, 1433000);
 			connection.info("Created " + studentCount + " random students");
-			addRandomPeople(Person.LECTURER, lecturerCount, 1000);
+			addRandomPeople(Person.LECTURER, lecturerCount, 1252000);
 			connection.info("Created " + lecturerCount + " random lecturers");
 
 			// student registrations

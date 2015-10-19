@@ -80,7 +80,7 @@ class DBTableModel extends DefaultTableModel
 			case 0:
 				return entry.id;
 			case 1:
-				return entry.title;
+				return entry.title + ".";
 			case 2:
 				return entry.forename;
 			case 3:

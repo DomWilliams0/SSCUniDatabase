@@ -6,8 +6,8 @@ CREATE TABLE Titles (
 
 INSERT INTO Titles VALUES
   (DEFAULT, 'Mr'), (DEFAULT, 'Mrs'), (DEFAULT, 'Miss'),
-  (DEFAULT, 'Ms'), (DEFAULT, 'Master'), (DEFAULT, 'Doctor'),
-  (DEFAULT, 'Professor'), (DEFAULT, 'Reverend');
+  (DEFAULT, 'Ms'), (DEFAULT, 'Prof'), (DEFAULT, 'Dr'),
+  (DEFAULT, 'Hon'), (DEFAULT, 'Rev');
 
 -- RegistrationType(registrationTypeID, description)
 CREATE TABLE RegistrationType (
