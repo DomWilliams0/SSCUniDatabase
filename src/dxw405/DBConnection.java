@@ -57,7 +57,7 @@ public class DBConnection implements AutoCloseable
 
 
 	/**
-	 * @param name     The logger's name
+	 * @param name The logger's name
 	 */
 	private void initLogger(String name)
 	{
@@ -123,6 +123,57 @@ public class DBConnection implements AutoCloseable
 		return connection.createStatement();
 	}
 
+	/**
+	 * Executes the queries sequentially in the given file, and logs queries to FINE
+	 *
+	 * @param file The input SQL file
+	 * @return An array of result sets from each query, or null if the operation failed
+	 */
+	public ResultSet[] executeQueriesFromFile(File file)
+	{
+		return executeQueriesFromFile(file, Level.FINE);
+	}
+
+	/**
+	 * Executes the queries sequentially in the given file
+	 *
+	 * @param file          The input SQL file
+	 * @param queryLogLevel The log level at which to log each query
+	 * @return An array of result sets from each query, or null if the operation failed
+	 */
+	public ResultSet[] executeQueriesFromFile(File file, Level queryLogLevel)
+	{
+		List<String> queries = fileParser.parseFile(file);
+		if (queries == null)
+			return null;
+
+		ResultSet[] results = new ResultSet[queries.size()];
+
+		Statement statement;
+		try
+		{
+			statement = connection.createStatement();
+		} catch (SQLException e)
+		{
+			logger.severe("Could not create statement: " + e);
+			return null;
+		}
+
+		for (int i = 0; i < results.length; i++)
+			results[i] = executeQuery(queries.get(i));
+
+		try
+		{
+			statement.close();
+		} catch (SQLException e)
+		{
+			logger.severe("Could not close statement: " + e);
+		}
+
+
+		return results;
+	}
+
 
 	/**
 	 * Executes the commands sequentially in the given file, and logs commands to FINE
@@ -130,9 +181,10 @@ public class DBConnection implements AutoCloseable
 	 * @param file The input SQL file
 	 * @return If the operation succeeded
 	 */
-	public boolean executeFile(File file)
+
+	public boolean executeUpdateFromFile(File file)
 	{
-		return executeFile(file, Level.FINE);
+		return executeUpdateFromFile(file, Level.FINE);
 	}
 
 	/**
@@ -142,7 +194,7 @@ public class DBConnection implements AutoCloseable
 	 * @param commandLogLevel The log level at which to log each command
 	 * @return If the operation succeeded
 	 */
-	public boolean executeFile(File file, Level commandLogLevel)
+	public boolean executeUpdateFromFile(File file, Level commandLogLevel)
 	{
 		List<String> commands = fileParser.parseFile(file);
 		if (commands == null)

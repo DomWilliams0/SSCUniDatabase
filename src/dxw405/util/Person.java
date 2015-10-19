@@ -33,4 +33,13 @@ public enum Person
 	}
 
 
+	// todo: generic method in Utils for enums
+	public static Person parse(String s)
+	{
+		String upper = s.toUpperCase();
+		for (Person person : values())
+			if (person.toString().equals(upper))
+				return person;
+		return null;
+	}
 }

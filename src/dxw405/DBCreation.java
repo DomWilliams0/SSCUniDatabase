@@ -85,7 +85,7 @@ public class DBCreation
 		// load and execute table creation commands
 		String inputFile = connection.getSQLPath("sql-create-tables");
 
-		success = connection.executeFile(new File(inputFile), Level.INFO);
+		success = connection.executeUpdateFromFile(new File(inputFile), Level.INFO);
 		if (success)
 			connection.info("Created tables successfully from (" + inputFile + ")");
 
