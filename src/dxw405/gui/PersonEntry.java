@@ -6,7 +6,7 @@ import java.util.Date;
 
 public class PersonEntry
 {
-	private final Person person;
+	public final Person person;
 	public final int id;
 	public final String title;
 	public final String forename;

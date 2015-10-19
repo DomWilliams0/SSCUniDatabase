@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 
 public class DBOverviewComponent extends JPanel implements ActionListener
 {
+	private DBTableComponent table;
 	private DBModel model;
 
 	public DBOverviewComponent(DBModel model)
@@ -17,15 +18,15 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 		this.model = model;
 
 		// data table
-		DBTableComponent tableComponent = new DBTableComponent(model);
-		add(tableComponent, BorderLayout.CENTER);
+		table = new DBTableComponent(model);
+		add(table, BorderLayout.CENTER);
 
 		// control panel
 		DBControlPanel controlPanel = new DBControlPanel(model, this);
 		add(controlPanel, BorderLayout.NORTH);
 
 		// model observers
-		model.addObserver(tableComponent);
+		model.addObserver(table);
 	}
 
 	/**
@@ -44,6 +45,8 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 		if (a == null)
 			return;
 
-		System.out.println("a = " + a);
+		// filtering
+		if (a.getParent() == Action.VISIBILITY)
+			table.filter(a);
 	}
 }

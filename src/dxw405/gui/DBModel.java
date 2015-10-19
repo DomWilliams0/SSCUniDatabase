@@ -15,8 +15,6 @@ import java.util.logging.Level;
 
 public class DBModel extends Observable
 {
-	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "DOB"};
-
 	private DBConnection connection;
 	private List<PersonEntry> tableEntries;
 
@@ -90,23 +88,6 @@ public class DBModel extends Observable
 			return e.getMessage();
 		}
 
-
 	}
 
-	public Object[] getTableColumns()
-	{
-		return COLUMNS;
-	}
-
-	/**
-	 * Convert an entry to a row, specified by the columns
-	 *
-	 * @param entry The entry to convert
-	 * @return A row
-	 */
-	public Object[] asRow(PersonEntry entry)
-	{
-		String dob = entry.dob == null ? "-" : DBTableComponent.formatDate(entry.dob);
-		return new Object[]{entry.id, entry.title, entry.forename, entry.surname, dob};
-	}
 }

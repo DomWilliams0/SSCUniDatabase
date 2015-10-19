@@ -5,12 +5,32 @@ package dxw405.gui;
  */
 public enum Action
 {
-	ADD_STUDENT,
+	ADD,
+	ADD_STUDENT(ADD),
 
-	VISIBLE_ALL,
-	VISIBLE_STUDENTS,
-	VISIBLE_LECTURERS,
+	VISIBILITY,
+	VISIBLE_ALL(VISIBILITY),
+	VISIBLE_STUDENTS(VISIBILITY),
+	VISIBLE_LECTURERS(VISIBILITY),
 
-	REPORT_STUDENT,
-	REPORT_TUTOR
+	REPORT,
+	REPORT_STUDENT(REPORT),
+	REPORT_TUTOR(REPORT);
+
+	private final Action parent;
+
+	Action()
+	{
+		this(null);
+	}
+
+	Action(Action parent)
+	{
+		this.parent = parent;
+	}
+
+	public Action getParent()
+	{
+		return parent;
+	}
 }
