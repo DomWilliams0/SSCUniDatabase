@@ -24,6 +24,8 @@ public class DBConnection implements AutoCloseable
 	 */
 	public DBConnection(String configFile)
 	{
+		initDefaultLogger();
+
 		// config
 		config = new Config(this);
 		boolean configLoaded = config.load(new File(configFile));
@@ -57,16 +59,35 @@ public class DBConnection implements AutoCloseable
 
 
 	/**
+	 * Initiates the logger with a default logging level
+	 * This allows for logging before the desired logging level can be loaded from the config (in case of errors)
+	 */
+	private void initDefaultLogger()
+	{
+		initLogger("DEFAULT", Level.INFO);
+	}
+
+	/**
+	 * Initiates the logger, using the logging level specified in the config
+	 *
 	 * @param name The logger's name
 	 */
 	private void initLogger(String name)
 	{
-		logger = Logger.getLogger(name);
-
 		Level logLevel = Utils.stringToLevel(config.get("log-level"));
 		boolean logLevelFailure = logLevel == null;
 		if (logLevelFailure)
 			logLevel = Level.INFO;
+
+		initLogger(name, logLevel);
+
+		if (logLevelFailure)
+			warning("Invalid log level provided in config, reverting to " + logLevel);
+	}
+
+	private void initLogger(String name, Level logLevel)
+	{
+		logger = Logger.getLogger(name);
 
 		logger.setLevel(logLevel);
 
@@ -79,9 +100,6 @@ public class DBConnection implements AutoCloseable
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setLevel(logLevel);
 		logger.addHandler(handler);
-
-		if (logLevelFailure)
-			warning("Invalid log level provided in config, reverting to INFO");
 	}
 
 	/**
