@@ -35,6 +35,7 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 	public void init()
 	{
 		model.populateTable();
+		model.gatherEnums();
 	}
 
 
@@ -48,5 +49,15 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 		// filtering
 		if (a.getParent() == Action.VISIBILITY)
 			table.filter(a);
+
+		else if (a.getParent() == Action.ADD)
+		{
+			AddStudentDialog addStudent = new AddStudentDialog(model);
+			if (!addStudent.display(this))
+				return;
+
+			// todo parse arguments
+
+		}
 	}
 }

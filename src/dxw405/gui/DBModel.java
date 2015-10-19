@@ -15,6 +15,9 @@ import java.util.logging.Level;
 
 public class DBModel extends Observable
 {
+	private String[] titles;
+	private String[] registrationTypes;
+
 	private DBConnection connection;
 	private List<PersonEntry> tableEntries;
 
@@ -88,6 +91,47 @@ public class DBModel extends Observable
 			return e.getMessage();
 		}
 
+	}
+
+	public String[] getTitles()
+	{
+		return titles;
+	}
+
+	public String[] getRegistrationTypes()
+	{
+		return registrationTypes;
+	}
+
+	public void gatherEnums()
+	{
+		titles = gatherEnum("Titles", "titleString");
+		registrationTypes = gatherEnum("RegistrationType", "description");
+	}
+
+	private String[] gatherEnum(String table, String column)
+	{
+		ResultSet resultSet = connection.executeQuery("SELECT " + column + " FROM " + table);
+		if (resultSet == null)
+			return null;
+
+		List<String> results = new ArrayList<>();
+
+		try
+		{
+			while (resultSet.next())
+				results.add(resultSet.getString(1).trim());
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not gather enum values from table \"" + table + "\": " + e);
+			return null;
+		}
+
+		String[] ret = new String[results.size()];
+		results.toArray(ret);
+
+		return ret;
 	}
 
 }
