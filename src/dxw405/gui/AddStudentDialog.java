@@ -22,6 +22,7 @@ public class AddStudentDialog extends JDialog
 	public AddStudentDialog(DBModel model)
 	{
 		this.model = model;
+		reset();
 
 		dialogContent = new JPanel(new GridBagLayout());
 
@@ -51,18 +52,30 @@ public class AddStudentDialog extends JDialog
 		dialogContent.add(nextOfKin, c);
 	}
 
-	public boolean display(Component parent)
+	/**
+	 * Displays the dialog
+	 *
+	 * @return True if valid information has been submitted, false if invalid information or cancel/close was pressed
+	 */
+	public boolean display()
 	{
-		JOptionPane pane = new JOptionPane(dialogContent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+		// reset all fields
+		reset();
 
+		// create and show dialog
+		JOptionPane pane = new JOptionPane(dialogContent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+		setTitle("Add Student");
 		setContentPane(pane);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		setLocationRelativeTo(parent);
-		// todo: not centred
-		pack();
-		setVisible(true);
 
-		// todo listeners for closing/cancel and clicking ok
+		pack();
+		setModal(true);
+		setLocationRelativeTo(null);
+		setVisible(true);
+		dispose();
+
+
+		// todo listeners for closing/cancel and clicking ok (somehow)
 
 		// cancel
 		//		if (choice != JOptionPane.OK_OPTION)
@@ -71,7 +84,21 @@ public class AddStudentDialog extends JDialog
 		return true;
 	}
 
+	private void reset()
+	{
+		forename = surname = email = address = nokName = nokEmail = nokAddress = null;
+		dob = null;
+		studentID = yearOfStudy = courseTypeID = titleID = -1;
+	}
 
+
+	/**
+	 * Borders the given panel with the given title
+	 *
+	 * @param panel The panel
+	 * @param title The title
+	 * @return The same panel, but with a border
+	 */
 	private JPanel addSubsection(JPanel panel, String title)
 	{
 		TitledBorder border = new TitledBorder(title);
@@ -81,6 +108,9 @@ public class AddStudentDialog extends JDialog
 		return panel;
 	}
 
+	/**
+	 * @return A panel with title, name and DOB input fields
+	 */
 	private JPanel getDetailsPanel()
 	{
 		JPanel panel = new JPanel();
@@ -102,6 +132,9 @@ public class AddStudentDialog extends JDialog
 		return panel;
 	}
 
+	/**
+	 * @return A panel with student ID, email and address input fields
+	 */
 	private JPanel getContactsPanel()
 	{
 		JPanel panel = new JPanel();
@@ -119,6 +152,9 @@ public class AddStudentDialog extends JDialog
 	}
 
 
+	/**
+	 * @return A panel with year of study and course type input fields
+	 */
 	private JPanel getCouseDetailsPanel()
 	{
 		JPanel panel = new JPanel();
@@ -132,6 +168,13 @@ public class AddStudentDialog extends JDialog
 		return panel;
 	}
 
+	/**
+	 * Helper function to create an array of ints as Strings
+	 *
+	 * @param min Start
+	 * @param max End (exclusive)
+	 * @return Array of the String values of the given range
+	 */
 	private String[] range(int min, int max)
 	{
 		String[] s = new String[max - min];
@@ -141,6 +184,9 @@ public class AddStudentDialog extends JDialog
 		return s;
 	}
 
+	/**
+	 * @return A panel with emergency contact name, email and address fields
+	 */
 	private JPanel getNextOfKinPanel()
 	{
 		JPanel panel = new JPanel();

@@ -53,7 +53,7 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 		else if (a.getParent() == Action.ADD)
 		{
 			AddStudentDialog addStudent = new AddStudentDialog(model);
-			if (!addStudent.display(this))
+			if (!addStudent.display())
 				return;
 
 			// todo parse arguments
