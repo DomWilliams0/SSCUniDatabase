@@ -356,6 +356,8 @@ public class DBConnection implements AutoCloseable
 	{
 		return config.getInt(key);
 	}
+
+	public boolean getBooleanFromConfig(String key) {return config.getBoolean(key);}
 }
 
 class DBDetails

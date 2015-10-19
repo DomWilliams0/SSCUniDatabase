@@ -11,7 +11,8 @@ public class DBGui
 	public DBGui(DBConnection connection)
 	{
 		// make pretty
-		prettifyUI(connection);
+		if (connection.getBooleanFromConfig("gui-os-skin"))
+			prettifyUI(connection);
 
 		// create components
 		DBModel model = new DBModel(connection);

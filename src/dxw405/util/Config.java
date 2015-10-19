@@ -57,4 +57,19 @@ public class Config
 			throw new IllegalArgumentException("Cannot get integer from config (" + key + "=" + value + ")");
 		}
 	}
+
+	public boolean getBoolean(String key)
+	{
+		String value = get(key);
+
+		switch (value)
+		{
+			case "true":
+				return true;
+			case "false":
+				return false;
+			default:
+				throw new IllegalArgumentException("Cannot get boolean from config (" + key + "=" + value + ")");
+		}
+	}
 }
