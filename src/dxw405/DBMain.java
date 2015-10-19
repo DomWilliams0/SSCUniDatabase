@@ -1,5 +1,7 @@
 package dxw405;
 
+import dxw405.gui.DBGui;
+
 public class DBMain
 {
 	enum Command
@@ -39,20 +41,19 @@ public class DBMain
 		}
 
 		// open connection to database
-		try (DBConnection connection = new DBConnection("res/config.properties"))
-		{
+		DBConnection connection = new DBConnection("res/config.properties");
 
-			switch (cmd)
-			{
-				case CREATE:
-					createTables(connection);
-					break;
-				case GUI:
-					startGUI(connection);
-					break;
-			}
+		switch (cmd)
+		{
+			case CREATE:
+				createTables(connection);
+				break;
+			case GUI:
+				startGUI(connection);
+				break;
 		}
 
+		// commands must close the DB connection themselves
 	}
 
 	/**
@@ -63,6 +64,7 @@ public class DBMain
 		DBCreation creation = new DBCreation(connection);
 		creation.createTables();
 		creation.populateTables();
+		connection.close();
 	}
 
 
@@ -71,7 +73,7 @@ public class DBMain
 	 */
 	private void startGUI(DBConnection connection)
 	{
-		throw new UnsupportedOperationException();
+		new DBGui(connection);
 	}
 
 
