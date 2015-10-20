@@ -4,6 +4,7 @@ import dxw405.util.Person;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseListener;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -13,12 +14,13 @@ public class DBTableComponent extends JPanel implements Observer
 	private DBTable table;
 	private DBModel model;
 
-	public DBTableComponent(DBModel model)
+	public DBTableComponent(MouseListener mouseListener, DBModel model)
 	{
 		super(new BorderLayout());
 		this.model = model;
 
-		this.table = new DBTable();
+		table = new DBTable();
+		table.addMouseListener(mouseListener);
 
 		JScrollPane scrollPane = new JScrollPane(this.table);
 		add(scrollPane, BorderLayout.CENTER);
@@ -63,5 +65,16 @@ public class DBTableComponent extends JPanel implements Observer
 		};
 
 		table.filter(typeFilter);
+	}
+
+	public int selectRow(Point point)
+	{
+		int row = table.rowAtPoint(point);
+		if (row >= 0 && row < table.getRowCount())
+			table.setRowSelectionInterval(row, row);
+		else
+			table.clearSelection();
+
+		return table.getSelectedRow();
 	}
 }

@@ -1,13 +1,16 @@
 package dxw405.gui;
 
+import dxw405.util.Person;
 import dxw405.util.Utils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
-public class DBOverviewComponent extends JPanel implements ActionListener
+public class DBOverviewComponent extends JPanel implements ActionListener, MouseListener
 {
 	private DBTableComponent table;
 	private DBModel model;
@@ -18,11 +21,11 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 		this.model = model;
 
 		// data table
-		table = new DBTableComponent(model);
+		table = new DBTableComponent(this, model);
 		add(table, BorderLayout.CENTER);
 
 		// control panel
-		DBControlPanel controlPanel = new DBControlPanel(model, this);
+		DBControlPanel controlPanel = new DBControlPanel(this);
 		add(controlPanel, BorderLayout.NORTH);
 
 		// model observers
@@ -67,4 +70,66 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 				JOptionPane.showMessageDialog(this, "Couldn't add " + fullName + ": " + errorMessage, "Failure", JOptionPane.ERROR_MESSAGE);
 		}
 	}
+
+	private void showTablePopup(MouseEvent e)
+	{
+
+		int row = table.selectRow(e.getPoint());
+		if (row < 0)
+			return;
+
+		if (e.isPopupTrigger())
+		{
+			PersonEntry entry = model.getTableEntries().get(row);
+			JPopupMenu popup = new JPopupMenu();
+
+			// "title"
+			popup.add(new JMenuItem("<html><u>" + entry.person.getTableName() + "</u></html>", null)
+			{
+				@Override
+				public void menuSelectionChanged(boolean isIncluded)
+				{
+					super.menuSelectionChanged(false);
+				}
+
+			});
+			popup.add(new JMenuItem("View report"));
+			if (entry.person == Person.STUDENT)
+				popup.add(new JMenuItem("Add tutor"));
+
+			// todo separate action listeners for both buttons
+
+			popup.show(e.getComponent(), e.getX(), e.getY());
+		}
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e)
+	{
+		showTablePopup(e);
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e)
+	{
+		showTablePopup(e);
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e)
+	{
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e)
+	{
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e)
+	{
+
+	}
+
 }

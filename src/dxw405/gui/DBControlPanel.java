@@ -6,7 +6,7 @@ import java.awt.event.ActionListener;
 
 public class DBControlPanel extends JPanel
 {
-	public DBControlPanel(DBModel model, ActionListener buttonListener)
+	public DBControlPanel(ActionListener buttonListener)
 	{
 		super(new BorderLayout());
 
