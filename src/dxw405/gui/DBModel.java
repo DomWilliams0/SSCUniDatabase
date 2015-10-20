@@ -6,6 +6,7 @@ import dxw405.util.Utils;
 
 import java.io.File;
 import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -51,22 +52,19 @@ public class DBModel extends Observable
 	private String addEntries(String sqlFile)
 	{
 		ResultSet[] allResults = connection.executeQueriesFromFile(new File(sqlFile), Level.INFO);
-		if (allResults == null)
-			return null;
+		if (allResults == null) return null;
 
 		try
 		{
 			for (ResultSet resultSet : allResults)
 			{
-				if (resultSet == null)
-					continue;
+				if (resultSet == null) continue;
 
 				while (resultSet.next())
 				{
 					String personType = resultSet.getString(1);
 					Person person = Utils.parseEnum(Person.class, personType);
-					if (person == null)
-						throw new SQLException("Bad person type specified in query (" + personType + ")");
+					if (person == null) throw new SQLException("Bad person type specified in query (" + personType + ")");
 
 					int id = resultSet.getInt(2);
 					String title = resultSet.getString(3).trim();
@@ -95,11 +93,13 @@ public class DBModel extends Observable
 
 	public String[] getTitles()
 	{
+		if (titles == null) return new String[0];
 		return titles;
 	}
 
 	public String[] getRegistrationTypes()
 	{
+		if (registrationTypes == null) return new String[0];
 		return registrationTypes;
 	}
 
@@ -112,15 +112,13 @@ public class DBModel extends Observable
 	private String[] gatherEnum(String table, String column)
 	{
 		ResultSet resultSet = connection.executeQuery("SELECT " + column + " FROM " + table);
-		if (resultSet == null)
-			return null;
+		if (resultSet == null) return null;
 
 		List<String> results = new ArrayList<>();
 
 		try
 		{
-			while (resultSet.next())
-				results.add(resultSet.getString(1).trim());
+			while (resultSet.next()) results.add(resultSet.getString(1).trim());
 
 		} catch (SQLException e)
 		{
@@ -131,7 +129,87 @@ public class DBModel extends Observable
 		String[] ret = new String[results.size()];
 		results.toArray(ret);
 
+		connection.fine("Gathered " + ret.length + " enum values from " + table);
+
 		return ret;
 	}
 
+	/**
+	 * Tries to add a student with the given input
+	 *
+	 * @param input The student input
+	 * @return The error message if the operation fails, otherwise null
+	 */
+	public String addStudent(AddStudentInput input)
+	{
+		try
+		{
+			PreparedStatement ps;
+			final int studentID = input.studentID;
+			System.out.println(input);
+
+			// add student
+			ps = connection.prepareStatement("INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)");
+			ps.setInt(1, studentID);
+			ps.setInt(2, input.titleID);
+			ps.setString(3, input.forename);
+			ps.setString(4, input.surname);
+			ps.setDate(5, new Date(input.dob.getTime()));
+			ps.executeUpdate();
+			connection.fine("Added student " + studentID + " to Student");
+			ps.close();
+
+			// contacts
+			if (input.hasNOK)
+			{
+				ps = connection.prepareStatement("INSERT INTO NextOfKin (studentID, name, eMailAddress, postalAddress) VALUES (?, ?, ?, ?)");
+				ps.setInt(1, studentID);
+				ps.setString(2, input.nokName);
+				ps.setString(3, input.nokEmail);
+				ps.setString(4, input.nokAddress);
+				ps.executeUpdate();
+				connection.fine("Added NextOfKin for " + studentID);
+				ps.close();
+			}
+
+			if (input.hasContact)
+			{
+				ps = connection.prepareStatement("INSERT INTO StudentContact (studentID, eMailAddress, postalAddress) VALUES (?, ?, ?)");
+				ps.setInt(1, studentID);
+				ps.setString(2, input.email);
+				ps.setString(3, input.address);
+				ps.executeUpdate();
+				connection.fine("Added StudentContact for " + studentID);
+				ps.close();
+			}
+
+			// course
+			if (input.hasCourseDetails)
+			{
+				ps = connection.prepareStatement("INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)");
+				ps.setInt(1, studentID);
+				ps.setInt(2, input.yearOfStudy);
+				ps.setInt(3, input.courseTypeID);
+				ps.executeUpdate();
+				connection.fine("Added StudentRegistration for " + studentID);
+				ps.close();
+			}
+
+			// create entry and add
+			String title = titles[input.titleID - 1];
+			tableEntries.add(new PersonEntry(Person.STUDENT, input.studentID, title, input.forename, input.surname, input.dob));
+
+			// update observers
+			setChanged();
+			notifyObservers();
+
+			return null;
+
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not add student: " + e);
+			return e.getMessage();
+		}
+	}
 }

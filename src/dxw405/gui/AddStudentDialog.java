@@ -1,29 +1,46 @@
 package dxw405.gui;
 
 import dxw405.gui.util.LimitedLengthDocument;
+import dxw405.util.Utils;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
 public class AddStudentDialog extends JDialog
 {
-	private final JPanel dialogContent;
+	private JPanel dialogContent;
 	private DBModel model;
 
-	private String forename, surname, email, address, nokName, nokEmail, nokAddress;
-	private int studentID, yearOfStudy, courseTypeID, titleID;
-	private Date dob;
+	private JTextComponent forename;
+	private JTextComponent surname;
+	private JTextComponent email;
+	private JTextComponent address;
+	private JTextComponent nokName;
+	private JTextComponent nokEmail;
+	private JTextComponent nokAddress;
 
-	public AddStudentDialog(DBModel model)
+	private JSpinner studentID;
+	private JComboBox yearOfStudy;
+	private JComboBox courseTypeID;
+	private JComboBox titleID;
+	private JSpinner dob;
+
+	private AddStudentDialog(DBModel model)
 	{
 		this.model = model;
-		reset();
+		initDialog();
+	}
 
+	private void initDialog()
+	{
 		dialogContent = new JPanel(new GridBagLayout());
 
 		JPanel personalDetails = addSubsection(getDetailsPanel(), "Personal");
@@ -52,15 +69,19 @@ public class AddStudentDialog extends JDialog
 		dialogContent.add(nextOfKin, c);
 	}
 
+	public static AddStudentInput showPopup(DBModel model)
+	{
+		return new AddStudentDialog(model).display();
+	}
+
 	/**
 	 * Displays the dialog
 	 *
 	 * @return True if valid information has been submitted, false if invalid information or cancel/close was pressed
 	 */
-	public boolean display()
+	private AddStudentInput display()
 	{
-		// reset all fields
-		reset();
+		// todo reset all fields?
 
 		// create and show dialog
 		JOptionPane pane = new JOptionPane(dialogContent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
@@ -68,27 +89,102 @@ public class AddStudentDialog extends JDialog
 		setContentPane(pane);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
-		pack();
 		setModal(true);
+		pack();
 		setLocationRelativeTo(null);
+
+		AddStudentInput input = new AddStudentInput();
+
+		pane.addPropertyChangeListener(e -> {
+			String prop = e.getPropertyName();
+			if (!isVisible() || (e.getSource() != pane) || (!JOptionPane.VALUE_PROPERTY.equals(prop) && !JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))) return;
+
+			Object value = pane.getValue();
+			if (value == JOptionPane.UNINITIALIZED_VALUE) return;
+
+			// allow repeated clicking
+			pane.setValue(JOptionPane.UNINITIALIZED_VALUE);
+
+			// ok: validate
+			if ((int) value == JOptionPane.OK_OPTION)
+			{
+				fillInput(input);
+
+				// all good
+				if (validateInput(input)) dispose();
+			}
+
+			// cancel/close: dispose
+			else
+			{
+				input.isValid = false;
+				dispose();
+			}
+		});
+
+		// display
 		setVisible(true);
-		dispose();
 
-
-		// todo listeners for closing/cancel and clicking ok (somehow)
-
-		// cancel
-		//		if (choice != JOptionPane.OK_OPTION)
-		//			return false;
-
-		return true;
+		return input.isValid ? input : null;
 	}
 
-	private void reset()
+	/**
+	 * Validates the given input, and opens a dialog box warning of the invalid fields if invalid
+	 *
+	 * @param input The input to validate
+	 * @return True if validated, false otherwise
+	 */
+	private boolean validateInput(AddStudentInput input)
 	{
-		forename = surname = email = address = nokName = nokEmail = nokAddress = null;
-		dob = null;
-		studentID = yearOfStudy = courseTypeID = titleID = -1;
+		java.util.List<String> errors = new ArrayList<>();
+
+		// mandatory fields
+		if (input.forename.isEmpty()) errors.add("Forename cannot be empty");
+		if (input.surname.isEmpty()) errors.add("Surname cannot be emptry");
+		if (input.studentID <= 0) errors.add("Student ID cannot be 0");
+
+		// todo emails format
+
+		// set flags
+		input.hasContact = !input.email.isEmpty() && !input.address.isEmpty();
+		input.hasCourseDetails = input.yearOfStudy > 0 && input.courseTypeID >= 0;
+		input.hasNOK = !input.nokName.isEmpty() && !input.nokEmail.isEmpty() && !input.nokAddress.isEmpty();
+
+		boolean success = errors.isEmpty();
+
+		// popup
+		if (!success)
+		{
+			String delimiter = "\n -";
+			String errorMessage = "Please fix the following issue(s):" + delimiter + String.join(delimiter, errors);
+			JOptionPane.showMessageDialog(this, errorMessage, "Uh oh", JOptionPane.ERROR_MESSAGE);
+		}
+
+		return success;
+
+	}
+
+	/**
+	 * Fills the given input with the contents of all fields
+	 *
+	 * @param input The input to fill
+	 */
+	private void fillInput(AddStudentInput input)
+	{
+		// todo abstract all fields to allow mass getText/value, and specify if mandatory
+		input.forename = Utils.capitalise(forename.getText().trim());
+		input.surname = Utils.capitalise(surname.getText().trim());
+		input.email = email.getText().trim();
+		input.address = address.getText().trim();
+		input.nokName = nokName.getText().trim(); // todo capitalise every word
+		input.nokEmail = nokEmail.getText().trim();
+		input.nokAddress = nokAddress.getText().trim();
+		input.studentID = (int) studentID.getValue();
+		input.yearOfStudy = yearOfStudy.getSelectedIndex() + 1;
+		input.courseTypeID = courseTypeID.getSelectedIndex() + 1;
+		input.titleID = titleID.getSelectedIndex() + 1;
+		input.dob = (Date) dob.getValue();
+		input.isValid = true;
 	}
 
 
@@ -116,9 +212,9 @@ public class AddStudentDialog extends JDialog
 		JPanel panel = new JPanel();
 
 		// name
-		addChoiceInput("Title", model.getTitles(), 0, panel);
-		addTextInput("Forename", 32, panel);
-		addTextInput("Surname", 32, panel);
+		titleID = (JComboBox) addChoiceInput("Title", model.getTitles(), 0, panel);
+		forename = (JTextComponent) addTextInput("Forename", 32, panel);
+		surname = (JTextComponent) addTextInput("Surname", 32, panel);
 
 		// dob
 		Calendar cal = Calendar.getInstance();
@@ -127,7 +223,7 @@ public class AddStudentDialog extends JDialog
 		Date maxDate = new Date();
 
 		// dob
-		addDateInput("DOB", minDate, maxDate, panel);
+		dob = (JSpinner) addDateInput("DOB", minDate, maxDate, panel);
 
 		return panel;
 	}
@@ -140,13 +236,13 @@ public class AddStudentDialog extends JDialog
 		JPanel panel = new JPanel();
 
 		// id
-		addNumberInput("Student ID", 0, Integer.MAX_VALUE, panel);
+		studentID = (JSpinner) addNumberInput("Student ID", 0, Integer.MAX_VALUE, panel);
 
 		// email
-		addTextInput("Email", 320, panel);
+		email = (JTextComponent) addTextInput("Email", 320, panel);
 
 		// postal
-		addTextArea("Address", 512, panel);
+		address = (JTextComponent) addTextArea("Address", 512, panel);
 
 		return panel;
 	}
@@ -160,10 +256,10 @@ public class AddStudentDialog extends JDialog
 		JPanel panel = new JPanel();
 
 		// year of study
-		addChoiceInput("Year of Study", range(1, 6), 0, panel);
+		yearOfStudy = (JComboBox) addChoiceInput("Year of Study", range(1, 6), 0, panel);
 
 		// registration type
-		addChoiceInput("Course Type", model.getRegistrationTypes(), 0, panel);
+		courseTypeID = (JComboBox) addChoiceInput("Course Type", model.getRegistrationTypes(), 0, panel);
 
 		return panel;
 	}
@@ -192,35 +288,35 @@ public class AddStudentDialog extends JDialog
 		JPanel panel = new JPanel();
 
 		// next of kin
-		addTextInput("Name", 64, panel);
+		nokName = (JTextComponent) addTextInput("Name", 64, panel);
 
 		// email
-		addTextInput("Email", 320, panel);
+		nokEmail = (JTextComponent) addTextInput("Email", 320, panel);
 
 		// postal
-		addTextArea("Address", 512, panel);
+		nokAddress = (JTextComponent) addTextArea("Address", 512, panel);
 
 		return panel;
 	}
 
-	private void addChoiceInput(String labelString, String[] choices, int initialChoice, JPanel parent)
+	private JComponent addChoiceInput(String labelString, String[] choices, int initialChoice, JPanel parent)
 	{
 		JComboBox<String> comboBox = new JComboBox<>(choices);
 		comboBox.setSelectedIndex(initialChoice);
 
-		addInput(labelString, comboBox, parent);
+		return addInput(labelString, comboBox, parent);
 	}
 
-	private void addDateInput(String labelString, Date minDate, Date maxDate, JPanel parent)
+	private JComponent addDateInput(String labelString, Date minDate, Date maxDate, JPanel parent)
 	{
 		JSpinner spinner = new JSpinner(new SpinnerDateModel(maxDate, minDate, maxDate, Calendar.DAY_OF_MONTH));
 		JSpinner.DateEditor editor = new JSpinner.DateEditor(spinner, "dd/MM/yyyy");
 		spinner.setEditor(editor);
 
-		addInput(labelString, spinner, parent);
+		return addInput(labelString, spinner, parent);
 	}
 
-	private void addNumberInput(String labelString, int min, int max, JPanel parent)
+	private JComponent addNumberInput(String labelString, int min, int max, JPanel parent)
 	{
 		JSpinner spinner = new JSpinner(new SpinnerNumberModel(min, min, max, 1));
 
@@ -228,39 +324,39 @@ public class AddStudentDialog extends JDialog
 		((NumberFormatter) editor.getTextField().getFormatter()).setAllowsInvalid(false);
 		editor.getFormat().setGroupingUsed(false);
 
-		addInput(labelString, spinner, parent);
+		return addInput(labelString, spinner, parent);
 
 	}
 
-	private void addTextInput(String labelString, int maxLength, JPanel parent)
+	private JComponent addTextInput(String labelString, int maxLength, JPanel parent)
 	{
-		addTextComponent(labelString, maxLength, false, parent);
+		return addTextComponent(labelString, maxLength, false, parent);
 	}
 
-	private void addTextArea(String labelString, int maxLength, JPanel parent)
+	private JComponent addTextArea(String labelString, int maxLength, JPanel parent)
 	{
-		addTextComponent(labelString, maxLength, true, parent);
+		return addTextComponent(labelString, maxLength, true, parent);
 	}
 
-	private void addTextComponent(String labelString, int maxLength, boolean textBox, JPanel parent)
+	private JComponent addTextComponent(String labelString, int maxLength, boolean textBox, JPanel parent)
 	{
 		JTextComponent text = textBox ? new JTextArea(4, 18) : new JTextField();
-		if (maxLength > 0)
-			text.setDocument(new LimitedLengthDocument(maxLength));
+		if (maxLength > 0) text.setDocument(new LimitedLengthDocument(maxLength));
 
 		if (textBox)
 		{
 			JScrollPane scrollPane = new JScrollPane(text);
 			addInput(labelString, scrollPane, parent);
+			return text;
 		} else
 		{
 			text.setPreferredSize(new Dimension(180, 20));
-			addInput(labelString, text, parent);
+			return addInput(labelString, text, parent);
 		}
 
 	}
 
-	private void addInput(String labelString, Component component, JPanel parent)
+	private JComponent addInput(String labelString, JComponent component, JPanel parent)
 	{
 		JLabel label = new JLabel(labelString);
 		label.setLabelFor(component);
@@ -274,7 +370,40 @@ public class AddStudentDialog extends JDialog
 		parent.add(component);
 
 		parent.add(Box.createVerticalStrut(4));
+
+		return component;
 	}
 
 }
 
+class AddStudentInput
+{
+	public String forename, surname, email, address, nokName, nokEmail, nokAddress;
+	public int studentID, yearOfStudy, courseTypeID, titleID;
+	public Date dob;
+
+	public boolean hasContact, hasNOK, hasCourseDetails, isValid;
+
+	@Override
+	public String toString()
+	{
+		return "AddStudentInput{" +
+				"forename='" + forename + '\'' +
+				", surname='" + surname + '\'' +
+				", email='" + email + '\'' +
+				", address='" + address + '\'' +
+				", nokName='" + nokName + '\'' +
+				", nokEmail='" + nokEmail + '\'' +
+				", nokAddress='" + nokAddress + '\'' +
+				", studentID=" + studentID +
+				", yearOfStudy=" + yearOfStudy +
+				", courseTypeID=" + courseTypeID +
+				", titleID=" + titleID +
+				", dob=" + dob +
+				", hasContact=" + hasContact +
+				", hasNOK=" + hasNOK +
+				", hasCourseDetails=" + hasCourseDetails +
+				", isValid=" + isValid +
+				'}';
+	}
+}

@@ -5,6 +5,8 @@ import dxw405.util.SQLFileParser;
 import dxw405.util.Utils;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.*;
 import java.util.List;
 import java.util.logging.ConsoleHandler;
@@ -29,8 +31,7 @@ public class DBConnection implements AutoCloseable
 		// config
 		config = new Config(this);
 		boolean configLoaded = config.load(new File(configFile));
-		if (!configLoaded)
-			halt("Could not load the config");
+		if (!configLoaded) halt("Could not load the config");
 
 		DBDetails details = new DBDetails(config);
 
@@ -39,8 +40,7 @@ public class DBConnection implements AutoCloseable
 
 		// db connection
 		boolean connectionSuccess = createConnection(details);
-		if (!connectionSuccess)
-			halt("Could not obtain a connection to the database");
+		if (!connectionSuccess) halt("Could not obtain a connection to the database");
 
 		// file parser
 		fileParser = new SQLFileParser(this);
@@ -76,13 +76,11 @@ public class DBConnection implements AutoCloseable
 	{
 		Level logLevel = Utils.stringToLevel(config.get("log-level"));
 		boolean logLevelFailure = logLevel == null;
-		if (logLevelFailure)
-			logLevel = Level.INFO;
+		if (logLevelFailure) logLevel = Level.INFO;
 
 		initLogger(name, logLevel);
 
-		if (logLevelFailure)
-			warning("Invalid log level provided in config, reverting to " + logLevel);
+		if (logLevelFailure) warning("Invalid log level provided in config, reverting to " + logLevel);
 	}
 
 	private void initLogger(String name, Level logLevel)
@@ -130,6 +128,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Could not connect to the database (" + url + "): " + e);
+			logStackTrace(e);
 			return false;
 		}
 
@@ -162,8 +161,7 @@ public class DBConnection implements AutoCloseable
 	public ResultSet[] executeQueriesFromFile(File file, Level queryLogLevel)
 	{
 		List<String> queries = fileParser.parseFile(file);
-		if (queries == null)
-			return null;
+		if (queries == null) return null;
 
 		ResultSet[] results = new ResultSet[queries.size()];
 
@@ -174,6 +172,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Could not create statement: " + e);
+			logStackTrace(e);
 			return null;
 		}
 
@@ -186,6 +185,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Could not close statement: " + e);
+			logStackTrace(e);
 		}
 
 
@@ -215,8 +215,7 @@ public class DBConnection implements AutoCloseable
 	public boolean executeUpdateFromFile(File file, Level commandLogLevel)
 	{
 		List<String> commands = fileParser.parseFile(file);
-		if (commands == null)
-			return false;
+		if (commands == null) return false;
 
 		Statement statement;
 		try
@@ -225,6 +224,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Could not create statement: " + e);
+			logStackTrace(e);
 			return false;
 		}
 
@@ -237,6 +237,7 @@ public class DBConnection implements AutoCloseable
 			} catch (SQLException e)
 			{
 				logger.log(commandLogLevel, "Could not execute command: " + e);
+				logStackTrace(e);
 			}
 		}
 
@@ -246,6 +247,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Could not close statement: " + e);
+			logStackTrace(e);
 		}
 
 		return true;
@@ -270,6 +272,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Failed to execute command: " + e);
+			logStackTrace(e);
 			return false;
 		}
 	}
@@ -291,6 +294,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Failed to execute query: " + e);
+			logStackTrace(e);
 			return null;
 		}
 	}
@@ -309,6 +313,7 @@ public class DBConnection implements AutoCloseable
 		} catch (SQLException e)
 		{
 			logger.severe("Could not close connection:" + e);
+			logStackTrace(e);
 		}
 	}
 
@@ -375,7 +380,23 @@ public class DBConnection implements AutoCloseable
 		return config.getInt(key);
 	}
 
-	public boolean getBooleanFromConfig(String key) {return config.getBoolean(key);}
+	public boolean getBooleanFromConfig(String key)
+	{
+		return config.getBoolean(key);
+	}
+
+	/**
+	 * Logs the given exception's stack trace at FINE
+	 *
+	 * @param e The exception
+	 */
+	private void logStackTrace(Exception e)
+	{
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		e.printStackTrace(pw);
+		logger.log(Level.FINE, sw.toString());
+	}
 }
 
 class DBDetails

@@ -57,8 +57,7 @@ public class DBCreation
 		{
 			ResultSet resultSet = connection.executeQuery("SELECT COUNT(" + column + ") FROM " + table);
 			int ret = -1;
-			while (resultSet.next())
-				ret = resultSet.getInt(1);
+			while (resultSet.next()) ret = resultSet.getInt(1);
 
 			resultSet.close();
 			return ret;
@@ -78,16 +77,14 @@ public class DBCreation
 	public void createTables()
 	{
 		// drop tables first
-		boolean success = connection.executeUpdate("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
-		if (success)
-			connection.info("Dropped all tables");
+		boolean success = connection.executeUpdateFromFile(new File(connection.getSQLPath("sql-drop-tables")));
+		if (success) connection.info("Dropped all tables");
 
 		// load and execute table creation commands
 		String inputFile = connection.getSQLPath("sql-create-tables");
 
 		success = connection.executeUpdateFromFile(new File(inputFile), Level.INFO);
-		if (success)
-			connection.info("Created tables successfully from (" + inputFile + ")");
+		if (success) connection.info("Created tables successfully from (" + inputFile + ")");
 
 		countEnums();
 	}
@@ -108,8 +105,7 @@ public class DBCreation
 		totalRandomNames += (lecturerCount * 2) * 2;
 
 		randomNames = getRandomNames(totalRandomNames, connection.getResourcePath("res-random-names"));
-		if (randomNames == null)
-			return;
+		if (randomNames == null) return;
 
 		connection.fine("Loaded " + randomNames.size() + " random names");
 
@@ -183,13 +179,11 @@ public class DBCreation
 
 				List<Integer> students = tutorGroups.get(lecturerID);
 				boolean replaceCurrent = students == null;
-				if (replaceCurrent)
-					students = new ArrayList<>(1);
+				if (replaceCurrent) students = new ArrayList<>(1);
 
 				students.add(studentID);
 
-				if (replaceCurrent)
-					tutorGroups.put(lecturerID, students);
+				if (replaceCurrent) tutorGroups.put(lecturerID, students);
 			}
 
 		}
@@ -329,9 +323,7 @@ public class DBCreation
 	 */
 	private void addRandomPeople(Person person, int count, int startingID) throws SQLException
 	{
-		String command = person == Person.STUDENT ?
-				"INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" :
-				"INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
+		String command = person == Person.STUDENT ? "INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" : "INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
 		PreparedStatement ps = connection.prepareStatement(command);
 
 		String[] names = randomNames.takeNames(count * 2);
@@ -352,8 +344,7 @@ public class DBCreation
 			ps.setInt(2, titleID);
 			ps.setString(3, forename);
 			ps.setString(4, surname);
-			if (dob != null)
-				ps.setDate(5, dob);
+			if (dob != null) ps.setDate(5, dob);
 
 			ps.addBatch();
 			ids.add(id);
@@ -407,8 +398,7 @@ public class DBCreation
 					reader.readLine();
 
 				String line = reader.readLine();
-				if (line != null)
-					names[nameIndex++] = line;
+				if (line != null) names[nameIndex++] = line;
 			}
 			reader.close();
 
@@ -463,8 +453,7 @@ public class DBCreation
 		public String[] takeNames(int count)
 		{
 			// not enough
-			if (index + count >= names.length)
-				throw new RuntimeException("All " + names.length + " random names have been used");
+			if (index + count >= names.length) throw new RuntimeException("All " + names.length + " random names have been used");
 
 			String[] ret = new String[count];
 			System.arraycopy(names, index, ret, 0, count);

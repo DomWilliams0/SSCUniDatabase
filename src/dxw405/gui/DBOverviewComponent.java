@@ -34,8 +34,8 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 	 */
 	public void init()
 	{
-		model.populateTable();
 		model.gatherEnums();
+		model.populateTable();
 	}
 
 
@@ -52,12 +52,19 @@ public class DBOverviewComponent extends JPanel implements ActionListener
 
 		else if (a.getParent() == Action.ADD)
 		{
-			AddStudentDialog addStudent = new AddStudentDialog(model);
-			if (!addStudent.display())
-				return;
+			AddStudentInput input = AddStudentDialog.showPopup(model);
+			if (input == null) return;
 
-			// todo parse arguments
+			// add to database
+			String errorMessage = model.addStudent(input);
+			boolean success = errorMessage == null;
 
+			// popup success/failure dialog
+			String fullName = model.getTitles()[input.titleID] + ". " + input.forename + " " + input.surname;
+			if (success)
+				JOptionPane.showMessageDialog(this, "Successfully added " + fullName, "Success", JOptionPane.INFORMATION_MESSAGE);
+			else
+				JOptionPane.showMessageDialog(this, "Couldn't add " + fullName + ": " + errorMessage, "Failure", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 }
