@@ -50,14 +50,12 @@ public class DBOverviewComponent extends JPanel
 	 */
 	private void showTablePopup(MouseEvent e)
 	{
-
-		int row = table.selectRow(e.getPoint());
-		if (row < 0)
-			return;
-
 		if (e.isPopupTrigger())
 		{
-			PersonEntry entry = model.getTableEntries().get(row);
+			PersonEntry entry = table.getEntry(e.getPoint());
+			if (entry == null)
+				return;
+
 			JPopupMenu popup = table.createRightClickPopup(entry);
 			popup.show(e.getComponent(), e.getX(), e.getY());
 		}

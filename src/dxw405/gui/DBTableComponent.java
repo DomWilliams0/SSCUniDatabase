@@ -70,15 +70,27 @@ public class DBTableComponent extends JPanel implements Observer
 		table.filter(typeFilter);
 	}
 
-	public int selectRow(Point point)
+	/**
+	 * Gets the PersonEntry for the row that is under the given point
+	 *
+	 * @param point The point
+	 * @return The corresponding PersonEntry, or null if invalid
+	 */
+	public PersonEntry getEntry(Point point)
 	{
+		// todo doesn't update when table is shuffled
 		int row = table.rowAtPoint(point);
 		if (row >= 0 && row < table.getRowCount())
 			table.setRowSelectionInterval(row, row);
 		else
 			table.clearSelection();
 
-		return table.getSelectedRow();
+		row = table.getSelectedRow();
+		if (row < 0)
+			return null;
+
+		int actualRow = table.convertRowIndexToModel(row);
+		return model.getTableEntries().get(actualRow);
 	}
 
 	/**
