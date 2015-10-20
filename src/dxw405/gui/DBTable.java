@@ -36,6 +36,7 @@ public class DBTable extends JTable
 
 class DBTableModel extends DefaultTableModel
 {
+	// todo add all
 	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "DOB"};
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 

@@ -8,14 +8,16 @@ import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.NumberFormatter;
 import java.awt.*;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public class AddStudentDialog extends JDialog
 {
+	// thank you stackoverflow http://stackoverflow.com/a/719543
+	private static Pattern EMAIL_REGEX = Pattern.compile("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$");
+
 	private JPanel dialogContent;
 	private DBModel model;
 
@@ -129,6 +131,45 @@ public class AddStudentDialog extends JDialog
 	}
 
 	/**
+	 * Fills the given input with the contents of all fields
+	 *
+	 * @param input The input to fill
+	 */
+	private void fillInput(AddStudentInput input)
+	{
+		// todo abstract all fields to allow mass getText/value, and specify if mandatory
+		input.forename = Utils.capitalise(forename.getText().trim());
+		input.surname = Utils.capitalise(surname.getText().trim());
+		input.email = email.getText().trim();
+		input.address = address.getText().trim();
+		input.nokName = Utils.capitalise(nokName.getText().trim());
+		input.nokEmail = nokEmail.getText().trim();
+		input.nokAddress = nokAddress.getText().trim();
+		input.studentID = (int) studentID.getValue();
+		input.yearOfStudy = yearOfStudy.getSelectedIndex() + 1;
+		input.courseTypeID = courseTypeID.getSelectedIndex();
+		input.titleID = titleID.getSelectedIndex();
+		input.dob = (Date) dob.getValue();
+		input.isValid = true;
+
+		// set flags
+		input.hasContact = !input.email.isEmpty() || !input.address.isEmpty();
+		input.hasNOK = !input.nokName.isEmpty() || !input.nokEmail.isEmpty() || !input.nokAddress.isEmpty();
+
+		// defaults
+		if (input.email.isEmpty())
+			input.email = null;
+		if (input.address.isEmpty())
+			input.address = null;
+		if (input.nokName.isEmpty())
+			input.nokName = null;
+		if (input.nokEmail.isEmpty())
+			input.nokEmail = null;
+		if (input.nokAddress.isEmpty())
+			input.nokAddress = null;
+	}
+
+	/**
 	 * Validates the given input, and opens a dialog box warning of the invalid fields if invalid
 	 *
 	 * @param input The input to validate
@@ -143,12 +184,16 @@ public class AddStudentDialog extends JDialog
 		if (input.surname.isEmpty()) errors.add("Surname cannot be emptry");
 		if (input.studentID <= 0) errors.add("Student ID cannot be 0");
 
-		// todo emails format
+		// student id already exists
+		if (model.personExists(input.studentID)) errors.add("A student already exists with that ID");
 
-		// set flags
-		input.hasContact = !input.email.isEmpty() && !input.address.isEmpty();
-		input.hasCourseDetails = input.yearOfStudy > 0 && input.courseTypeID >= 0;
-		input.hasNOK = !input.nokName.isEmpty() && !input.nokEmail.isEmpty() && !input.nokAddress.isEmpty();
+		// anomalies
+		if (input.yearOfStudy < 1 || input.yearOfStudy > 5) errors.add("Year of study is out of range");
+		if (input.courseTypeID < 0 || input.courseTypeID >= model.getRegistrationTypes().length) errors.add("Course type is invalid");
+
+		// emails
+		if (input.email != null && !EMAIL_REGEX.matcher(input.email).matches()) errors.add("Contact email is not an email address");
+		if (input.nokEmail != null && !EMAIL_REGEX.matcher(input.nokEmail).matches()) errors.add("Emergency contact email is not an email address");
 
 		boolean success = errors.isEmpty();
 
@@ -161,32 +206,7 @@ public class AddStudentDialog extends JDialog
 		}
 
 		return success;
-
 	}
-
-	/**
-	 * Fills the given input with the contents of all fields
-	 *
-	 * @param input The input to fill
-	 */
-	private void fillInput(AddStudentInput input)
-	{
-		// todo abstract all fields to allow mass getText/value, and specify if mandatory
-		input.forename = Utils.capitalise(forename.getText().trim());
-		input.surname = Utils.capitalise(surname.getText().trim());
-		input.email = email.getText().trim();
-		input.address = address.getText().trim();
-		input.nokName = nokName.getText().trim(); // todo capitalise every word
-		input.nokEmail = nokEmail.getText().trim();
-		input.nokAddress = nokAddress.getText().trim();
-		input.studentID = (int) studentID.getValue();
-		input.yearOfStudy = yearOfStudy.getSelectedIndex() + 1;
-		input.courseTypeID = courseTypeID.getSelectedIndex() + 1;
-		input.titleID = titleID.getSelectedIndex() + 1;
-		input.dob = (Date) dob.getValue();
-		input.isValid = true;
-	}
-
 
 	/**
 	 * Borders the given panel with the given title
@@ -195,6 +215,7 @@ public class AddStudentDialog extends JDialog
 	 * @param title The title
 	 * @return The same panel, but with a border
 	 */
+
 	private JPanel addSubsection(JPanel panel, String title)
 	{
 		TitledBorder border = new TitledBorder(title);
@@ -382,7 +403,7 @@ class AddStudentInput
 	public int studentID, yearOfStudy, courseTypeID, titleID;
 	public Date dob;
 
-	public boolean hasContact, hasNOK, hasCourseDetails, isValid;
+	public boolean hasContact, hasNOK, isValid;
 
 	@Override
 	public String toString()
@@ -402,7 +423,6 @@ class AddStudentInput
 				", dob=" + dob +
 				", hasContact=" + hasContact +
 				", hasNOK=" + hasNOK +
-				", hasCourseDetails=" + hasCourseDetails +
 				", isValid=" + isValid +
 				'}';
 	}

@@ -88,14 +88,36 @@ public class Utils
 	}
 
 	/**
-	 * Capitalises a string
+	 * Capitalises every word in the given string
 	 *
-	 * @param s The string to capitalise
-	 * @return First letter capitalised, the rest lowercase
+	 * @param sentence The sentence to capitalise
+	 * @return The first letter of every word capitalised, the rest lowercase
 	 */
-	public static String capitalise(String s)
+	public static String capitalise(String sentence)
 	{
-		return Character.toUpperCase(s.charAt(0)) + s.substring(1).toLowerCase();
+		if (sentence == null)
+			return null;
+
+		String[] split = sentence.split(" ");
+		StringBuilder sb = new StringBuilder();
+		for (String s : split)
+		{
+			int length = s.length();
+			switch (length)
+			{
+				case 0:
+					sb.append(" ");
+					break;
+				case 1:
+					sb.append(s.toUpperCase()).append(" ");
+					break;
+				default:
+					sb.append(Character.toUpperCase(s.charAt(0))).append(s.substring(1).toLowerCase());
+					break;
+			}
+		}
+
+		return sb.toString();
 	}
 
 	/**

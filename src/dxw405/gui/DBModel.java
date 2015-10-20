@@ -146,17 +146,25 @@ public class DBModel extends Observable
 		{
 			PreparedStatement ps;
 			final int studentID = input.studentID;
-			System.out.println(input);
 
 			// add student
 			ps = connection.prepareStatement("INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)");
 			ps.setInt(1, studentID);
-			ps.setInt(2, input.titleID);
+			ps.setInt(2, input.titleID + 1);
 			ps.setString(3, input.forename);
 			ps.setString(4, input.surname);
 			ps.setDate(5, new Date(input.dob.getTime()));
 			ps.executeUpdate();
 			connection.fine("Added student " + studentID + " to Student");
+			ps.close();
+
+			// course
+			ps = connection.prepareStatement("INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)");
+			ps.setInt(1, studentID);
+			ps.setInt(2, input.yearOfStudy);
+			ps.setInt(3, input.courseTypeID + 1);
+			ps.executeUpdate();
+			connection.fine("Added StudentRegistration for " + studentID);
 			ps.close();
 
 			// contacts
@@ -183,20 +191,9 @@ public class DBModel extends Observable
 				ps.close();
 			}
 
-			// course
-			if (input.hasCourseDetails)
-			{
-				ps = connection.prepareStatement("INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)");
-				ps.setInt(1, studentID);
-				ps.setInt(2, input.yearOfStudy);
-				ps.setInt(3, input.courseTypeID);
-				ps.executeUpdate();
-				connection.fine("Added StudentRegistration for " + studentID);
-				ps.close();
-			}
 
 			// create entry and add
-			String title = titles[input.titleID - 1];
+			String title = titles[input.titleID];
 			tableEntries.add(new PersonEntry(Person.STUDENT, input.studentID, title, input.forename, input.surname, input.dob));
 
 			// update observers
@@ -211,5 +208,19 @@ public class DBModel extends Observable
 			connection.severe("Could not add student: " + e);
 			return e.getMessage();
 		}
+	}
+
+	/**
+	 * Checks if a person with the given ID already exists
+	 *
+	 * @param id The ID to check
+	 * @return If a person already exists with that ID
+	 */
+	public boolean personExists(int id)
+	{
+		for (PersonEntry entry : tableEntries)
+			if (entry.id == id)
+				return true;
+		return false;
 	}
 }
