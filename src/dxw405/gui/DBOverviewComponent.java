@@ -1,5 +1,8 @@
 package dxw405.gui;
 
+import dxw405.gui.dialog.DialogType;
+import dxw405.gui.dialog.UserInput;
+import dxw405.gui.dialog.dialogs.BaseDialog;
 import dxw405.util.Utils;
 
 import javax.swing.*;
@@ -99,7 +102,7 @@ public class DBOverviewComponent extends JPanel
 				// add student
 			else if (a.getParent() == Action.ADD)
 			{
-				AddStudentInput input = AddStudentDialog.showPopup(model);
+				UserInput input = BaseDialog.showDialog(DialogType.ADD_STUDENT, model);
 				if (input == null) return;
 
 				// add to database
@@ -107,12 +110,15 @@ public class DBOverviewComponent extends JPanel
 				boolean success = errorMessage == null;
 
 				// popup success/failure dialog
-				String fullName = model.getTitles()[input.titleID] + ". " + input.forename + " " + input.surname;
+				String fullName = model.getTitles()[input.<Integer>getValue("titleID")] + ". " +
+						input.getValue("forename") + " " + input.getValue("surname");
+
 				if (success)
-					JOptionPane.showMessageDialog(DBOverviewComponent.this, "Successfully added " + fullName, "Success", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(DBOverviewComponent.this, "Successfully added " + fullName,
+							"Success", JOptionPane.INFORMATION_MESSAGE);
 				else
-					JOptionPane.showMessageDialog(DBOverviewComponent.this, "Couldn't add " + fullName + ": " + errorMessage, "Failure", JOptionPane
-							.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(DBOverviewComponent.this, "Couldn't add " + fullName + "\n" + errorMessage,
+							"Failure", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 

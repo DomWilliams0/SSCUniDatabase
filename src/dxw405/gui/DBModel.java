@@ -1,6 +1,7 @@
 package dxw405.gui;
 
 import dxw405.DBConnection;
+import dxw405.gui.dialog.UserInput;
 import dxw405.util.Person;
 import dxw405.util.Utils;
 
@@ -137,23 +138,23 @@ public class DBModel extends Observable
 	/**
 	 * Tries to add a student with the given input
 	 *
-	 * @param input The student input
+	 * @param i The user's input
 	 * @return The error message if the operation fails, otherwise null
 	 */
-	public String addStudent(AddStudentInput input)
+	public String addStudent(UserInput i)
 	{
 		try
 		{
 			PreparedStatement ps;
-			final int studentID = input.studentID;
+			final int studentID = i.getValue("studentID");
 
 			// add student
 			ps = connection.prepareStatement("INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)");
 			ps.setInt(1, studentID);
-			ps.setInt(2, input.titleID + 1);
-			ps.setString(3, input.forename);
-			ps.setString(4, input.surname);
-			ps.setDate(5, new Date(input.dob.getTime()));
+			ps.setInt(2, i.<Integer>getValue("titleID") + 1);
+			ps.setString(3, i.getValue("forename"));
+			ps.setString(4, i.getValue("surname"));
+			ps.setDate(5, new Date(i.<java.util.Date>getValue("dob").getTime()));
 			ps.executeUpdate();
 			connection.fine("Added student " + studentID + " to Student");
 			ps.close();
@@ -161,31 +162,31 @@ public class DBModel extends Observable
 			// course
 			ps = connection.prepareStatement("INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)");
 			ps.setInt(1, studentID);
-			ps.setInt(2, input.yearOfStudy);
-			ps.setInt(3, input.courseTypeID + 1);
+			ps.setInt(2, i.<Integer>getValue("yearOfStudy") + 1);
+			ps.setInt(3, i.<Integer>getValue("courseTypeID") + 1);
 			ps.executeUpdate();
 			connection.fine("Added StudentRegistration for " + studentID);
 			ps.close();
 
 			// contacts
-			if (input.hasNOK)
+			if (i.getFlag("hasNOK"))
 			{
 				ps = connection.prepareStatement("INSERT INTO NextOfKin (studentID, name, eMailAddress, postalAddress) VALUES (?, ?, ?, ?)");
 				ps.setInt(1, studentID);
-				ps.setString(2, input.nokName);
-				ps.setString(3, input.nokEmail);
-				ps.setString(4, input.nokAddress);
+				ps.setString(2, i.getValue("nokName"));
+				ps.setString(3, i.getValue("nokEmail"));
+				ps.setString(4, i.getValue("nokAddress"));
 				ps.executeUpdate();
 				connection.fine("Added NextOfKin for " + studentID);
 				ps.close();
 			}
 
-			if (input.hasContact)
+			if (i.getFlag("hasContact"))
 			{
 				ps = connection.prepareStatement("INSERT INTO StudentContact (studentID, eMailAddress, postalAddress) VALUES (?, ?, ?)");
 				ps.setInt(1, studentID);
-				ps.setString(2, input.email);
-				ps.setString(3, input.address);
+				ps.setString(2, i.getValue("contactEmail"));
+				ps.setString(3, i.getValue("contactAddress"));
 				ps.executeUpdate();
 				connection.fine("Added StudentContact for " + studentID);
 				ps.close();
@@ -193,8 +194,8 @@ public class DBModel extends Observable
 
 
 			// create entry and add
-			String title = titles[input.titleID];
-			tableEntries.add(new PersonEntry(Person.STUDENT, input.studentID, title, input.forename, input.surname, input.dob));
+			String title = titles[i.<Integer>getValue("titleID")];
+			tableEntries.add(new PersonEntry(Person.STUDENT, studentID, title, i.getValue("forename"), i.getValue("surname"), i.getValue("dob")));
 
 			// update observers
 			setChanged();
