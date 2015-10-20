@@ -99,7 +99,8 @@ public class AddStudentDialog extends JDialog
 
 		pane.addPropertyChangeListener(e -> {
 			String prop = e.getPropertyName();
-			if (!isVisible() || (e.getSource() != pane) || (!JOptionPane.VALUE_PROPERTY.equals(prop) && !JOptionPane.INPUT_VALUE_PROPERTY.equals(prop))) return;
+			if (!isVisible() || (e.getSource() != pane) || (!JOptionPane.VALUE_PROPERTY.equals(prop) && !JOptionPane.INPUT_VALUE_PROPERTY.equals(prop)))
+				return;
 
 			Object value = pane.getValue();
 			if (value == JOptionPane.UNINITIALIZED_VALUE) return;
@@ -114,6 +115,7 @@ public class AddStudentDialog extends JDialog
 
 				// all good
 				if (validateInput(input)) dispose();
+				else input.isValid = false;
 			}
 
 			// cancel/close: dispose
@@ -181,7 +183,7 @@ public class AddStudentDialog extends JDialog
 
 		// mandatory fields
 		if (input.forename.isEmpty()) errors.add("Forename cannot be empty");
-		if (input.surname.isEmpty()) errors.add("Surname cannot be emptry");
+		if (input.surname.isEmpty()) errors.add("Surname cannot be empty");
 		if (input.studentID <= 0) errors.add("Student ID cannot be 0");
 
 		// student id already exists

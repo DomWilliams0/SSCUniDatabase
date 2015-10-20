@@ -1,9 +1,12 @@
 package dxw405.gui;
 
 import dxw405.util.Person;
+import dxw405.util.Utils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.util.List;
 import java.util.Observable;
@@ -76,5 +79,71 @@ public class DBTableComponent extends JPanel implements Observer
 			table.clearSelection();
 
 		return table.getSelectedRow();
+	}
+
+	/**
+	 * Creates a popup menu for the given entry
+	 *
+	 * @param entry The entry
+	 * @return A contextual popup menu
+	 */
+	public JPopupMenu createRightClickPopup(PersonEntry entry)
+	{
+		JPopupMenu popup = new JPopupMenu();
+
+		// "title"
+		popup.add(new JMenuItem("<html><u>" + entry.person.getTableName() + "</u></html>", null)
+		{
+			@Override
+			public void menuSelectionChanged(boolean isIncluded)
+			{
+				super.menuSelectionChanged(false);
+			}
+
+		});
+		TablePopupMenuListener listener = new TablePopupMenuListener(entry);
+
+		// add buttons
+		JMenuItem report = new JMenuItem("View report");
+		report.addActionListener(listener);
+		popup.add(report);
+		if (entry.person == Person.STUDENT)
+		{
+			JMenuItem tutor = new JMenuItem("Add tutor");
+			tutor.addActionListener(listener);
+			popup.add(tutor);
+		}
+
+		return popup;
+	}
+
+
+	private class TablePopupMenuListener implements ActionListener
+	{
+		private final PersonEntry entry;
+
+		public TablePopupMenuListener(PersonEntry entry)
+		{
+			this.entry = entry;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			RightClickTableAction action = Utils.parseEnum(RightClickTableAction.class, ((AbstractButton) e.getSource()).getText(), false);
+			if (action == null) return;
+
+			// add tutor
+			if (action == RightClickTableAction.ADD_TUTOR)
+			{
+				// todo
+			}
+
+			// view report
+			else if (action == RightClickTableAction.VIEW_REPORT)
+			{
+				// todo
+			}
+		}
 	}
 }

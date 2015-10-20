@@ -1,16 +1,15 @@
 package dxw405.gui;
 
-import dxw405.util.Person;
 import dxw405.util.Utils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
-public class DBOverviewComponent extends JPanel implements ActionListener, MouseListener
+public class DBOverviewComponent extends JPanel
 {
 	private DBTableComponent table;
 	private DBModel model;
@@ -21,11 +20,11 @@ public class DBOverviewComponent extends JPanel implements ActionListener, Mouse
 		this.model = model;
 
 		// data table
-		table = new DBTableComponent(this, model);
+		table = new DBTableComponent(new TablePopupMouseListener(), model);
 		add(table, BorderLayout.CENTER);
 
 		// control panel
-		DBControlPanel controlPanel = new DBControlPanel(this);
+		DBControlPanel controlPanel = new DBControlPanel(new ControlPanelListener());
 		add(controlPanel, BorderLayout.NORTH);
 
 		// model observers
@@ -41,36 +40,11 @@ public class DBOverviewComponent extends JPanel implements ActionListener, Mouse
 		model.populateTable();
 	}
 
-
-	@Override
-	public void actionPerformed(ActionEvent e)
-	{
-		Action a = Utils.parseEnum(Action.class, e.getActionCommand());
-		if (a == null)
-			return;
-
-		// filtering
-		if (a.getParent() == Action.VISIBILITY)
-			table.filter(a);
-
-		else if (a.getParent() == Action.ADD)
-		{
-			AddStudentInput input = AddStudentDialog.showPopup(model);
-			if (input == null) return;
-
-			// add to database
-			String errorMessage = model.addStudent(input);
-			boolean success = errorMessage == null;
-
-			// popup success/failure dialog
-			String fullName = model.getTitles()[input.titleID] + ". " + input.forename + " " + input.surname;
-			if (success)
-				JOptionPane.showMessageDialog(this, "Successfully added " + fullName, "Success", JOptionPane.INFORMATION_MESSAGE);
-			else
-				JOptionPane.showMessageDialog(this, "Couldn't add " + fullName + ": " + errorMessage, "Failure", JOptionPane.ERROR_MESSAGE);
-		}
-	}
-
+	/**
+	 * Creates a contextual popup at the click location
+	 *
+	 * @param e The mouse click event
+	 */
 	private void showTablePopup(MouseEvent e)
 	{
 
@@ -81,55 +55,68 @@ public class DBOverviewComponent extends JPanel implements ActionListener, Mouse
 		if (e.isPopupTrigger())
 		{
 			PersonEntry entry = model.getTableEntries().get(row);
-			JPopupMenu popup = new JPopupMenu();
-
-			// "title"
-			popup.add(new JMenuItem("<html><u>" + entry.person.getTableName() + "</u></html>", null)
-			{
-				@Override
-				public void menuSelectionChanged(boolean isIncluded)
-				{
-					super.menuSelectionChanged(false);
-				}
-
-			});
-			popup.add(new JMenuItem("View report"));
-			if (entry.person == Person.STUDENT)
-				popup.add(new JMenuItem("Add tutor"));
-
-			// todo separate action listeners for both buttons
-
+			JPopupMenu popup = table.createRightClickPopup(entry);
 			popup.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}
 
-	@Override
-	public void mousePressed(MouseEvent e)
-	{
-		showTablePopup(e);
-	}
-
-	@Override
-	public void mouseReleased(MouseEvent e)
-	{
-		showTablePopup(e);
-	}
-
-	@Override
-	public void mouseClicked(MouseEvent e)
-	{
-	}
-
-	@Override
-	public void mouseEntered(MouseEvent e)
+	/**
+	 * Popup menu listener for right clicking on the table
+	 */
+	private class TablePopupMouseListener extends MouseAdapter
 	{
 
+		@Override
+		public void mousePressed(MouseEvent e)
+		{
+			showTablePopup(e);
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent e)
+		{
+			showTablePopup(e);
+		}
 	}
 
-	@Override
-	public void mouseExited(MouseEvent e)
+	/**
+	 * Button listener for add student and visibility buttons on the top control panel
+	 */
+	private class ControlPanelListener implements ActionListener
 	{
 
-	}
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			Action a = Utils.parseEnum(Action.class, e.getActionCommand());
+			if (a == null)
+				return;
 
+			// filtering
+			if (a.getParent() == Action.VISIBILITY)
+				table.filter(a);
+
+				// add student
+			else if (a.getParent() == Action.ADD)
+			{
+				AddStudentInput input = AddStudentDialog.showPopup(model);
+				if (input == null) return;
+
+				// add to database
+				String errorMessage = model.addStudent(input);
+				boolean success = errorMessage == null;
+
+				// popup success/failure dialog
+				String fullName = model.getTitles()[input.titleID] + ". " + input.forename + " " + input.surname;
+				if (success)
+					JOptionPane.showMessageDialog(DBOverviewComponent.this, "Successfully added " + fullName, "Success", JOptionPane.INFORMATION_MESSAGE);
+				else
+					JOptionPane.showMessageDialog(DBOverviewComponent.this, "Couldn't add " + fullName + ": " + errorMessage, "Failure", JOptionPane
+							.ERROR_MESSAGE);
+			}
+		}
+
+	}
 }
+
+

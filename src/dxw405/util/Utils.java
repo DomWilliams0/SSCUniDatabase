@@ -97,6 +97,8 @@ public class Utils
 	{
 		if (sentence == null)
 			return null;
+		if (sentence.isEmpty())
+			return sentence;
 
 		String[] split = sentence.split(" ");
 		StringBuilder sb = new StringBuilder();
@@ -146,10 +148,23 @@ public class Utils
 	 */
 	public static <E extends Enum<E>> E parseEnum(Class<E> enumClass, String s)
 	{
+		return parseEnum(enumClass, s, true);
+	}
+
+	/**
+	 * Converts a String into an Enum
+	 *
+	 * @param enumClass      The enum
+	 * @param s              The string to parse
+	 * @param convertToUpper If the given string should be converted to uppercase before comparison
+	 * @return The corresponding enum value, or null if none was found
+	 */
+	public static <E extends Enum<E>> E parseEnum(Class<E> enumClass, String s, boolean convertToUpper)
+	{
 		EnumSet<E> values = EnumSet.allOf(enumClass);
-		String upper = s.toUpperCase();
+		String sCompare = convertToUpper ? s.toUpperCase() : s;
 		for (E value : values)
-			if (value.toString().equals(upper))
+			if (value.toString().equals(sCompare))
 				return value;
 		return null;
 	}
