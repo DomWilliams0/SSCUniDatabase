@@ -5,10 +5,9 @@ import dxw405.util.Utils;
 
 public class DBMain
 {
-	enum Command
+	public static void main(String[] args)
 	{
-		CREATE,
-		GUI
+		new DBMain().run(args);
 	}
 
 	public void run(String[] args)
@@ -94,8 +93,9 @@ public class DBMain
 		System.exit(1);
 	}
 
-	public static void main(String[] args)
+	enum Command
 	{
-		new DBMain().run(args);
+		CREATE,
+		GUI
 	}
 }

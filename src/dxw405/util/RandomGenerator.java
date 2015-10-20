@@ -11,9 +11,6 @@ public interface RandomGenerator
 	String[] POSTAL_SUFFIXES = {"Road", "Lane", "Way", "Street"};
 	String[] DOMAINS = {".com", ".net", ".co.uk", ".io", ".meme", ".gov", ".org"};
 
-	String generate();
-
-
 	/**
 	 * Generates a random string of a length between the supplied min and max
 	 *
@@ -31,6 +28,8 @@ public interface RandomGenerator
 
 		return new String(acc);
 	}
+
+	String generate();
 
 	class RandomBhamEmail implements RandomGenerator
 	{

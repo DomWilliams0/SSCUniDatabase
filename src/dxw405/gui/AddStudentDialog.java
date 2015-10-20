@@ -41,6 +41,11 @@ public class AddStudentDialog extends JDialog
 		initDialog();
 	}
 
+	public static AddStudentInput showPopup(DBModel model)
+	{
+		return new AddStudentDialog(model).display();
+	}
+
 	private void initDialog()
 	{
 		dialogContent = new JPanel(new GridBagLayout());
@@ -69,11 +74,6 @@ public class AddStudentDialog extends JDialog
 		c.gridx = 1;
 		c.gridy = 1;
 		dialogContent.add(nextOfKin, c);
-	}
-
-	public static AddStudentInput showPopup(DBModel model)
-	{
-		return new AddStudentDialog(model).display();
 	}
 
 	/**
