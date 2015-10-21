@@ -33,7 +33,7 @@ public class AddTutorDialog extends BaseDialog
 		BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
 		panel.setLayout(layout);
 
-		addField(panel, new IDInputField("studentID", "Student ID", true, student.id)).setEditable(false);
+		addField(panel, new IDInputField("studentID", "Student ID", true, student.getID())).setEditable(false);
 		addField(panel, new ChoiceInputField("lecturerID", "Tutor", true, model.getLecturerNames(), 0));
 
 		return panel;
@@ -43,7 +43,7 @@ public class AddTutorDialog extends BaseDialog
 	protected void validateAndFlag(List<String> errors, UserInput input)
 	{
 		// add student id
-		input.setVar("studentID", student.id);
+		input.setVar("studentID", student.getID());
 
 		// get tutor id
 		String lecturerName = model.getLecturerNames()[((int) input.getValue("lecturerID"))];
@@ -57,7 +57,7 @@ public class AddTutorDialog extends BaseDialog
 		{
 			// same tutor check
 			Integer currentTutorID = model.getTutorID(input.getValue("studentID"));
-			if (currentTutorID != null && currentTutorID == chosenTutor.id)
+			if (currentTutorID != null && currentTutorID == chosenTutor.getID())
 				errors.add("That lecturer is already that student's tutor");
 
 		}

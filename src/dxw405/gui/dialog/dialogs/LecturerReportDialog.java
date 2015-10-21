@@ -60,19 +60,19 @@ public class LecturerReportDialog extends ReportDialog
 		Map<Integer, Integer> tutors = model.getTutors();
 		for (Map.Entry<Integer, Integer> tutorEntry : tutors.entrySet())
 		{
-			if (tutorEntry.getValue() != entry.id)
+			if (tutorEntry.getValue() != entry.getID())
 				continue;
 
 			PersonEntry studentEntry = model.getEntryFromID(tutorEntry.getKey());
 			if (studentEntry == null)
 				continue;
 
-			List<PersonEntry> entries = tutees.get(studentEntry.yearOfStudy);
+			List<PersonEntry> entries = tutees.get(studentEntry.getYearOfStudy());
 			if (entries == null)
 			{
 				entries = new ArrayList<>();
 				entries.add(studentEntry);
-				tutees.put(studentEntry.yearOfStudy, entries);
+				tutees.put(studentEntry.getYearOfStudy(), entries);
 			} else
 				entries.add(studentEntry);
 		}
@@ -107,9 +107,9 @@ public class LecturerReportDialog extends ReportDialog
 	{
 		JPanel panel = new JPanel();
 
-		addLabel(panel, "ID", String.valueOf(entry.id));
+		addLabel(panel, "ID", String.valueOf(entry.getID()));
 		addLabel(panel, "Name", entry.getFullName());
-		addLabel(panel, "Office", entry.office); // todo get office on initial populate
+		addLabel(panel, "Office", entry.getOffice());
 
 		return panel;
 	}

@@ -91,7 +91,8 @@ public class DBModel extends Observable
 						office = resultSet.getString(7);
 
 
-					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, tutorID, dob, office));
+					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, dob, tutorID,
+							null, null, null, null, office));
 				}
 			}
 
@@ -149,15 +150,16 @@ public class DBModel extends Observable
 				int lecturerID = resultSet.getInt(2);
 
 				tutors.put(studentID, lecturerID);
+
+				PersonEntry entry = getEntryFromID(studentID);
+				entry.setTutorID(lecturerID, this);
+
 			}
 		} catch (SQLException e)
 		{
 			connection.severe("Could not update tutor map: " + e);
 			connection.logStackTrace(e);
 		}
-
-		for (PersonEntry entry : tableEntries)
-			entry.updateTutorName(this);
 	}
 
 	public Map<Integer, Integer> getTutors()
@@ -179,7 +181,7 @@ public class DBModel extends Observable
 	public PersonEntry getEntryFromID(int id)
 	{
 		for (PersonEntry entry : tableEntries)
-			if (id == entry.id)
+			if (id == entry.getID())
 				return entry;
 
 		return null;
@@ -196,7 +198,7 @@ public class DBModel extends Observable
 	public PersonEntry getEntryFromFullName(String fullName, Person type)
 	{
 		for (PersonEntry entry : tableEntries)
-			if (entry.person == type && entry.getFullName().equals(fullName))
+			if (entry.getPerson() == type && entry.getFullName().equals(fullName))
 				return entry;
 
 		connection.severe("Could not find entry with full name: " + fullName);
@@ -354,7 +356,7 @@ public class DBModel extends Observable
 	public boolean personExists(int id)
 	{
 		for (PersonEntry entry : tableEntries)
-			if (entry.id == id)
+			if (entry.getID() == id)
 				return true;
 		return false;
 	}
@@ -362,19 +364,18 @@ public class DBModel extends Observable
 	public String addTutor(PersonEntry student, UserInput input)
 	{
 		// not a student
-		if (student.person != Person.STUDENT)
+		if (student.getPerson() != Person.STUDENT)
 			return "Only students can have tutors";
 
-		final int studentID = student.id;
+		final int studentID = student.getID();
 
 		// remove current tutor
-		if (student.tutorID != null)
+		if (student.getTutorID() != null)
 		{
-			int oldTutor = student.tutorID;
+			int oldTutor = student.getTutorID();
 
 			// from student entry
-			student.tutorID = null;
-			student.updateTutorName(this);
+			student.setTutorID(null);
 
 			// from tutor map
 			tutors.remove(studentID);
@@ -404,16 +405,15 @@ public class DBModel extends Observable
 		try
 		{
 			// to student entry
-			student.tutorID = newTutor.id;
-			student.updateTutorName(this);
+			student.setTutorID(newTutor.getID());
 
 			// to tutor map
-			tutors.put(studentID, student.tutorID);
+			tutors.put(studentID, student.getTutorID());
 
 			// to database
 			PreparedStatement ps = connection.prepareStatement("INSERT INTO Tutor (studentID, lecturerID) VALUES (?, ?)");
 			ps.setInt(1, studentID);
-			ps.setInt(2, lecturers[input.<Integer>getValue("lecturerID")].id);
+			ps.setInt(2, lecturers[input.<Integer>getValue("lecturerID")].getID());
 			ps.executeUpdate();
 			connection.fine("Added student " + studentID + " to tutor group " + input.getValue("lecturerID"));
 			ps.close();
@@ -445,25 +445,25 @@ public class DBModel extends Observable
 		try
 		{
 			PreparedStatement ps = pss[0];
-			ps.setInt(1, entry.id);
+			ps.setInt(1, entry.getID());
 			ResultSet resultSet = ps.executeQuery();
 
 			while (resultSet.next())
 			{
-				entry.address = resultSet.getString(1).trim();
-				entry.nokName = resultSet.getString(2).trim();
-				entry.nokEmail = resultSet.getString(3).trim();
-				entry.nokAddress = resultSet.getString(4).trim();
+				entry.setAddress(resultSet.getString(1));
+				entry.setNOKName(resultSet.getString(2));
+				entry.setNOKEmail(resultSet.getString(3));
+				entry.setNOKAddress(resultSet.getString(4));
 				break;
 			}
 
-			connection.fine("Populated student " + entry.id + " with full details");
+			connection.finer("Populated student " + entry.getID() + " with full details");
 			ps.close();
 
 
 		} catch (SQLException e)
 		{
-			connection.severe("Could not populate student " + entry.id + " with full details: " + e);
+			connection.severe("Could not populate student " + entry.getID() + " with full details: " + e);
 			connection.logStackTrace(e);
 		}
 	}

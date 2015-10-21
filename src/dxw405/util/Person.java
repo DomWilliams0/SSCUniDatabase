@@ -1,5 +1,6 @@
 package dxw405.util;
 
+// todo rename to PersonType
 public enum Person
 {
 	STUDENT("studentID", "StudentContact", "Student"),

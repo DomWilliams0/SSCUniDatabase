@@ -107,7 +107,7 @@ public class DBTableComponent extends JPanel implements Observer
 		JPopupMenu popup = new JPopupMenu();
 
 		// "title"
-		popup.add(new JMenuItem("<html><u>" + entry.person.getTableName() + "</u></html>", null)
+		popup.add(new JMenuItem("<html><u>" + entry.getPerson().getTableName() + "</u></html>", null)
 		{
 			@Override
 			public void menuSelectionChanged(boolean isIncluded)
@@ -122,7 +122,7 @@ public class DBTableComponent extends JPanel implements Observer
 		JMenuItem report = new JMenuItem(RightClickTableAction.VIEW_REPORT.toString());
 		report.addActionListener(listener);
 		popup.add(report);
-		if (entry.person == Person.STUDENT)
+		if (entry.getPerson() == Person.STUDENT)
 		{
 			JMenuItem tutor = new JMenuItem(RightClickTableAction.ADD_TUTOR.toString());
 			tutor.addActionListener(listener);
@@ -166,7 +166,7 @@ public class DBTableComponent extends JPanel implements Observer
 			else if (action == RightClickTableAction.VIEW_REPORT)
 			{
 				DialogType reportType;
-				switch (entry.person)
+				switch (entry.getPerson())
 				{
 					case STUDENT:
 						reportType = DialogType.REPORT_STUDENT;

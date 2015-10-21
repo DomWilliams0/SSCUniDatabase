@@ -110,27 +110,27 @@ class DBTableModel extends DefaultTableModel
 		switch (columnIndex)
 		{
 			case 0:
-				return entry.id;
+				return entry.getID();
 			case 1:
-				return entry.title + ".";
+				return entry.getTitle();
 			case 2:
-				return entry.forename;
+				return entry.getForename();
 			case 3:
-				return entry.surname;
+				return entry.getSurname();
 			case 4:
-				return entry.email;
+				return entry.getEmail();
 			case 5:
-				return entry.office;
+				return entry.getOffice();
 			case 6:
-				return entry.yearOfStudy;
+				return entry.getYearOfStudy();
 			case 7:
-				return entry.courseType;
+				return entry.getCourseType();
 			case 8:
-				return entry.tutorName;
+				return entry.getTutorName();
 			case 9:
-				return entry.dob == null ? null : DATE_FORMAT.format(entry.dob);
+				return entry.getDOBFormatted();
 			case 10:
-				return entry.person;
+				return entry.getPerson();
 			default:
 				return "?";
 

@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.EnumSet;
 import java.util.Random;
 import java.util.logging.Level;
@@ -13,7 +14,9 @@ import java.util.logging.Level;
 public class Utils
 {
 	public static final Random RANDOM = new Random();
+
 	public static final String DATE_FORMAT = "dd/MM/yyyy";
+	public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat(DATE_FORMAT);
 
 
 	private Utils()
