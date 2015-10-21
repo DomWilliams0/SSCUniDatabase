@@ -96,8 +96,8 @@ public class AddStudentDialog extends BaseDialog
 
 		// name
 		addField(panel, new ChoiceInputField("titleID", "Title", true, model.getTitles(), 0));
-		addField(panel, new TextInputField("forename", "Forename", true, 32));
-		addField(panel, new TextInputField("surname", "Surname", true, 32));
+		addField(panel, new TextInputField("forename", "Forename", true, 32, true));
+		addField(panel, new TextInputField("surname", "Surname", true, 32, true));
 
 		// dob
 		Calendar cal = Calendar.getInstance();
