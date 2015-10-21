@@ -107,9 +107,9 @@ public class LecturerReportDialog extends ReportDialog
 	{
 		JPanel panel = new JPanel();
 
-		addLabel(panel, "id", "ID", String.valueOf(entry.id));
-		addLabel(panel, "name", "Name", entry.getFullName());
-		addLabel(panel, "office", "Office", entry.office); // todo get office on initial populate
+		addLabel(panel, "ID", String.valueOf(entry.id));
+		addLabel(panel, "Name", entry.getFullName());
+		addLabel(panel, "Office", entry.office); // todo get office on initial populate
 
 		return panel;
 	}

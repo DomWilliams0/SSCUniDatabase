@@ -35,9 +35,9 @@ public class StudentReportDialog extends ReportDialog
 		JPanel panel = new JPanel();
 
 		// name, email, address
-		addLabel(panel, "nokName", "Name", entry.nokName);
-		addLabel(panel, "nokEmail", "Email", entry.nokEmail);
-		addLabel(panel, "nokAddress", "Address", entry.nokAddress);
+		addLabel(panel, "Name", entry.nokName);
+		addLabel(panel, "Email", entry.nokEmail);
+		addLabel(panel, "Address", entry.nokAddress);
 
 		return panel;
 	}
@@ -47,8 +47,8 @@ public class StudentReportDialog extends ReportDialog
 		JPanel panel = new JPanel();
 
 		// email and address
-		addLabel(panel, "contactEmail", "Email", entry.email);
-		addLabel(panel, "contactAddress", "Address", entry.address);
+		addLabel(panel, "Email", entry.email);
+		addLabel(panel, "Address", entry.address);
 
 		return panel;
 	}
@@ -59,9 +59,9 @@ public class StudentReportDialog extends ReportDialog
 		JPanel panel = new JPanel();
 
 		// tutor, year, course
-		addLabel(panel, "tutorName", "Tutor", entry.tutorName);
-		addLabel(panel, "yearOfStudy", "Year Of Study", "Year " + entry.yearOfStudy);
-		addLabel(panel, "courseType", "Course Type", entry.courseType);
+		addLabel(panel, "Tutor", entry.tutorName);
+		addLabel(panel, "Year Of Study", "Year " + entry.yearOfStudy);
+		addLabel(panel, "Course Type", entry.courseType);
 
 		return panel;
 	}
@@ -71,9 +71,9 @@ public class StudentReportDialog extends ReportDialog
 		JPanel panel = new JPanel();
 
 		// id, name, dob
-		addLabel(panel, "id", "ID", String.valueOf(entry.id));
-		addLabel(panel, "name", "Name", entry.getFullName());
-		addLabel(panel, "dob", "DOB", DATE_FORMAT.format(entry.dob));
+		addLabel(panel, "ID", String.valueOf(entry.id));
+		addLabel(panel, "Name", entry.getFullName());
+		addLabel(panel, "DOB", DATE_FORMAT.format(entry.dob));
 
 		return panel;
 	}
