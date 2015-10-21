@@ -158,6 +158,10 @@ public class DBModel extends Observable
 			entry.updateTutorName(this);
 	}
 
+	public Map<Integer, Integer> getTutors()
+	{
+		return tutors;
+	}
 
 	public Integer getTutorID(int studentID)
 	{

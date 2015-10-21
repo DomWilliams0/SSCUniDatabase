@@ -22,6 +22,7 @@ public class PersonEntry
 	public String nokName;
 	public String nokEmail;
 	public String nokAddress;
+	public String office;
 
 	public PersonEntry(Person person, int id, String title, String forename, String surname, String email,
 					   Integer yearOfStudy, String courseType, Integer tutorID, Date dob)
