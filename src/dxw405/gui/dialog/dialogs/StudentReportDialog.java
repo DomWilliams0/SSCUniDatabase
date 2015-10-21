@@ -23,6 +23,7 @@ public class StudentReportDialog extends BaseDialog
 	{
 		super(dbModel, DialogType.REPORT_STUDENT, extraArgs);
 		entry = (PersonEntry) extraArgs[0];
+		model.populateStudent(entry);
 	}
 
 	@Override
@@ -34,13 +35,13 @@ public class StudentReportDialog extends BaseDialog
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.anchor = GridBagConstraints.PAGE_START;
 
-		// personal
 		panel.add(addSectionTitle(getPersonalPanel(), "Personal"), c);
+		panel.add(addSectionTitle(getCoursePanel(), "Course"), c);
+		panel.add(addSectionTitle(getContactPanel(), "Contact"), c);
+		panel.add(addSectionTitle(getNOKPanel(), "Emergency Contact"), c);
 
 		return panel;
-
 	}
-
 
 	@Override
 	protected void validateAndFlag(List<String> errors, UserInput input)
@@ -48,26 +49,58 @@ public class StudentReportDialog extends BaseDialog
 
 	}
 
+	private JPanel getNOKPanel()
+	{
+		JPanel panel = new JPanel();
+
+		// name, email, address
+		addLabel(panel, "nokName", "Name", entry.nokName);
+		addLabel(panel, "nokEmail", "Email", entry.nokEmail);
+		addLabel(panel, "nokAddress", "Address", entry.nokAddress);
+
+		return panel;
+	}
+
+	private JPanel getContactPanel()
+	{
+		JPanel panel = new JPanel();
+
+		// email and address
+		addLabel(panel, "contactEmail", "Email", entry.email);
+		addLabel(panel, "contactAddress", "Address", entry.address);
+
+		return panel;
+	}
+
+
+	private JPanel getCoursePanel()
+	{
+		JPanel panel = new JPanel();
+
+		// tutor, year, course
+		addLabel(panel, "tutorName", "Tutor", entry.tutorName);
+		addLabel(panel, "yearOfStudy", "Year Of Study", "Year " + entry.yearOfStudy);
+		addLabel(panel, "courseType", "Course Type", entry.courseType);
+
+		return panel;
+	}
+
 	private JPanel getPersonalPanel()
 	{
 		JPanel panel = new JPanel();
 
-		// id
+		// id, name, dob
 		addLabel(panel, "id", "ID", String.valueOf(entry.id));
-
-		// name
 		addLabel(panel, "name", "Name", entry.getFullName());
-
-		// dob
 		addLabel(panel, "dob", "DOB", DATE_FORMAT.format(entry.dob));
-
 
 		return panel;
 	}
 
 	protected InputField addLabel(JPanel panel, String key, String label, String value)
 	{
-		return addField(panel, new TextInputField(key, label, false, -1)).setValue(value).setEditable(false);
+		return addField(panel, new TextInputField(key, label, false, -1)).setValue(value == null ? "" : value).setEditable(false);
 	}
+
 
 }

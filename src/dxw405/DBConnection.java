@@ -304,6 +304,34 @@ public class DBConnection implements AutoCloseable
 		return connection.prepareStatement(sql);
 	}
 
+	/**
+	 * Prepares the statements sequentially from the given file
+	 *
+	 * @param file The input SQL file
+	 * @return An array of prepared statements for each query, or null if the operation failed
+	 */
+	public PreparedStatement[] prepareStatementsFromFile(File file)
+	{
+		List<String> statements = fileParser.parseFile(file);
+		if (statements == null) return null;
+
+		PreparedStatement[] pss = new PreparedStatement[statements.size()];
+
+		try
+		{
+			for (int i = 0; i < pss.length; i++)
+				pss[i] = connection.prepareStatement(statements.get(i));
+
+		} catch (SQLException e)
+		{
+			logger.severe("Could not prepare statements from file: " + e);
+			logStackTrace(e);
+			return null;
+		}
+
+		return pss;
+	}
+
 	public void close()
 	{
 		try

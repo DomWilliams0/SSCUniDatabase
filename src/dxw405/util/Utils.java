@@ -120,7 +120,7 @@ public class Utils
 			}
 		}
 
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	/**

@@ -18,6 +18,11 @@ public class PersonEntry
 	public final Date dob;
 	public String tutorName;
 
+	public String address;
+	public String nokName;
+	public String nokEmail;
+	public String nokAddress;
+
 	public PersonEntry(Person person, int id, String title, String forename, String surname, String email,
 					   Integer yearOfStudy, String courseType, Integer tutorID, Date dob)
 	{
@@ -32,6 +37,8 @@ public class PersonEntry
 		this.tutorID = tutorID;
 		this.tutorName = null;
 		this.dob = dob;
+
+		address = nokName = nokEmail = nokAddress = null;
 	}
 
 	public static PersonEntry addStudent(int id, String title, String forename, String surname, String email,

@@ -57,7 +57,7 @@ public class AddTutorDialog extends BaseDialog
 		{
 			// same tutor check
 			Integer currentTutorID = model.getTutorID(input.getValue("studentID"));
-			if (currentTutorID == chosenTutor.id)
+			if (currentTutorID != null && currentTutorID == chosenTutor.id)
 				errors.add("That lecturer is already that student's tutor");
 
 		}

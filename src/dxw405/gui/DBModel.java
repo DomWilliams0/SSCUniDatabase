@@ -60,7 +60,8 @@ public class DBModel extends Observable
 		{
 			for (ResultSet resultSet : allResults)
 			{
-				if (resultSet == null) continue;
+				if (resultSet == null)
+					continue;
 
 				while (resultSet.next())
 				{
@@ -175,7 +176,6 @@ public class DBModel extends Observable
 			if (id == entry.id)
 				return entry;
 
-		connection.severe("Could not find entry with id " + id);
 		return null;
 	}
 
@@ -425,6 +425,43 @@ public class DBModel extends Observable
 		}
 	}
 
+	/**
+	 * Populates the given entry with the corresponding contact and emergency contact information
+	 * This is only loaded on demand
+	 *
+	 * @param entry The entry to populate
+	 */
+	public void populateStudent(PersonEntry entry)
+	{
+		PreparedStatement[] pss = connection.prepareStatementsFromFile(new File(connection.getSQLPath("sql-full-student")));
+		if (pss == null) return;
+
+		try
+		{
+			PreparedStatement ps = pss[0];
+			ps.setInt(1, entry.id);
+			ResultSet resultSet = ps.executeQuery();
+
+			while (resultSet.next())
+			{
+				entry.address = resultSet.getString(1).trim();
+				entry.nokName = resultSet.getString(2).trim();
+				entry.nokEmail = resultSet.getString(3).trim();
+				entry.nokAddress = resultSet.getString(4).trim();
+				break;
+			}
+
+			connection.fine("Populated student " + entry.id + " with full details");
+			ps.close();
+
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not populate student " + entry.id + " with full details: " + e);
+			connection.logStackTrace(e);
+		}
+	}
+
 	public void logInfo(String msg) {connection.info(msg);}
 
 	public void logSevere(String msg) {connection.severe(msg);}
@@ -434,5 +471,4 @@ public class DBModel extends Observable
 	public void logFine(String msg) {connection.fine(msg);}
 
 	public void logStackTrace(Exception e) {connection.logStackTrace(e);}
-
 }
