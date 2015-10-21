@@ -180,8 +180,9 @@ public abstract class BaseDialog extends JDialog
 	 *
 	 * @param panel The panel to add to
 	 * @param field The field
+	 * @return The field
 	 */
-	protected void addField(JPanel panel, InputField field)
+	protected InputField addField(JPanel panel, InputField field)
 	{
 		// centre the label
 		Box box = Box.createHorizontalBox();
@@ -196,6 +197,8 @@ public abstract class BaseDialog extends JDialog
 		panel.add(Box.createVerticalStrut(4));
 
 		inputFields.add(field);
+
+		return field;
 	}
 
 }

@@ -6,7 +6,6 @@ import dxw405.gui.dialog.DialogType;
 import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.inputfields.ChoiceInputField;
 import dxw405.gui.dialog.inputfields.IDInputField;
-import dxw405.gui.dialog.inputfields.InputField;
 import dxw405.util.Person;
 
 import javax.swing.*;
@@ -34,10 +33,7 @@ public class AddTutorDialog extends BaseDialog
 		BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
 		panel.setLayout(layout);
 
-		InputField studentID = new IDInputField("studentID", "Student ID", true, student.id);
-		studentID.setEditable(false);
-		addField(panel, studentID);
-
+		addField(panel, new IDInputField("studentID", "Student ID", true, student.id)).setEditable(false);
 		addField(panel, new ChoiceInputField("lecturerID", "Tutor", true, model.getLecturerNames(), 0));
 
 		return panel;
