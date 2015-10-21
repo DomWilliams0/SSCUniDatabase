@@ -10,10 +10,10 @@ SELECT
   description,
   TUT.lecturerID
 FROM Student S
-  INNER JOIN StudentRegistration SR ON S.studentID = SR.studentID
-  INNER JOIN StudentContact SC ON S.studentID = SC.studentID
-  INNER JOIN RegistrationType RT ON RT.registrationTypeID = SR.registrationTypeID
-  INNER JOIN Titles T ON S.titleid = T.titleid
+  LEFT JOIN StudentRegistration SR ON S.studentID = SR.studentID
+  LEFT JOIN StudentContact SC ON S.studentID = SC.studentID
+  LEFT JOIN RegistrationType RT ON RT.registrationTypeID = SR.registrationTypeID
+  LEFT JOIN Titles T ON S.titleid = T.titleid
   LEFT JOIN Tutor TUT ON S.studentID = TUT.studentID;
 
 
