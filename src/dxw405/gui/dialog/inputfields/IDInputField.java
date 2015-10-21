@@ -41,6 +41,13 @@ public class IDInputField extends InputField
 	}
 
 	@Override
+	public InputField setValue(Object value)
+	{
+		((JTextField) component).setText(String.valueOf(value));
+		return this;
+	}
+
+	@Override
 	public boolean hasNoValue()
 	{
 		return getValue() <= 0;

@@ -20,6 +20,13 @@ public class NumberInputField extends InputField
 	}
 
 	@Override
+	public InputField setValue(Object value)
+	{
+		((JSpinner) component).setValue(value);
+		return this;
+	}
+
+	@Override
 	public boolean hasNoValue()
 	{
 		return false;

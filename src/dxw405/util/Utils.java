@@ -13,6 +13,7 @@ import java.util.logging.Level;
 public class Utils
 {
 	public static final Random RANDOM = new Random();
+	public static final String DATE_FORMAT = "dd/MM/yyyy";
 
 
 	private Utils()

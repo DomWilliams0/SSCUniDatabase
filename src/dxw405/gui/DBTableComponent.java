@@ -165,7 +165,20 @@ public class DBTableComponent extends JPanel implements Observer
 			// view report
 			else if (action == RightClickTableAction.VIEW_REPORT)
 			{
-				// todo
+				DialogType reportType;
+				switch (entry.person)
+				{
+					case STUDENT:
+						reportType = DialogType.REPORT_STUDENT;
+						break;
+					case LECTURER:
+						reportType = DialogType.REPORT_LECTURER;
+						break;
+					default:
+						return;
+				}
+
+				BaseDialog.showDialog(reportType, model, entry);
 			}
 		}
 

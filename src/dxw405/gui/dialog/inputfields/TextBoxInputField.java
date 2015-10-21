@@ -24,4 +24,11 @@ public class TextBoxInputField extends StringInputField
 	{
 		return textArea.getText().trim();
 	}
+
+	@Override
+	public InputField setValue(Object value)
+	{
+		textArea.setText(String.valueOf(value));
+		return this;
+	}
 }

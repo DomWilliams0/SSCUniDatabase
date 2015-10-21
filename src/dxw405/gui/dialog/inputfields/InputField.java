@@ -25,6 +25,11 @@ public abstract class InputField
 	public abstract Object getValue();
 
 	/**
+	 * @param value The value to set the field to
+	 */
+	public abstract InputField setValue(Object value);
+
+	/**
 	 * @return If the field has a null value, eg. an empty String
 	 */
 	public abstract boolean hasNoValue();
@@ -62,10 +67,12 @@ public abstract class InputField
 		return key;
 	}
 
-	public void setEditable(boolean editable)
+	public InputField setEditable(boolean editable)
 	{
 		component.setEnabled(editable);
+		return this;
 	}
+
 }
 
 

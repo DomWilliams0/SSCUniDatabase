@@ -17,9 +17,16 @@ public class ChoiceInputField extends InputField
 	}
 
 	@Override
+	public InputField setValue(Object value)
+	{
+		throw new UnsupportedOperationException("setting choice input value");
+	}
+
+	@Override
 	public boolean hasNoValue()
 	{
 		return false;
 	}
+
 
 }

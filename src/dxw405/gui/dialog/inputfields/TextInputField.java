@@ -4,7 +4,6 @@ import dxw405.gui.util.LimitedLengthDocument;
 import dxw405.util.Utils;
 
 import javax.swing.*;
-
 import java.awt.*;
 
 public class TextInputField extends StringInputField
@@ -31,5 +30,12 @@ public class TextInputField extends StringInputField
 	{
 		String value = ((JTextField) component).getText().trim();
 		return capitalise ? Utils.capitalise(value) : value;
+	}
+
+	@Override
+	public InputField setValue(Object value)
+	{
+		((JTextField) component).setText(String.valueOf(value));
+		return this;
 	}
 }
