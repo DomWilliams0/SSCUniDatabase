@@ -390,12 +390,13 @@ public class DBConnection implements AutoCloseable
 	 *
 	 * @param e The exception
 	 */
-	private void logStackTrace(Exception e)
+	public void logStackTrace(Exception e)
 	{
+		String wrapper = "------------------";
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		e.printStackTrace(pw);
-		logger.log(Level.FINE, sw.toString());
+		logger.log(Level.FINE, "\n" + wrapper + "\n" + sw.toString() + wrapper);
 	}
 }
 

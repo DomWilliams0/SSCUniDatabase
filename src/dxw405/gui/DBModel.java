@@ -19,6 +19,8 @@ public class DBModel extends Observable
 {
 	private String[] titles;
 	private String[] registrationTypes;
+	private PersonEntry[] lecturers;
+	private String[] lecturerNames;
 
 	private DBConnection connection;
 	private List<PersonEntry> tableEntries;
@@ -87,6 +89,7 @@ public class DBModel extends Observable
 		} catch (SQLException e)
 		{
 			connection.severe("Could not retrieve entries: " + e);
+			connection.logStackTrace(e);
 			return e.getMessage();
 		}
 
@@ -94,20 +97,64 @@ public class DBModel extends Observable
 
 	public String[] getTitles()
 	{
-		if (titles == null) return new String[0];
 		return titles;
 	}
 
 	public String[] getRegistrationTypes()
 	{
-		if (registrationTypes == null) return new String[0];
 		return registrationTypes;
+	}
+
+	public String[] getLecturerNames()
+	{
+		return lecturerNames;
 	}
 
 	public void gatherEnums()
 	{
 		titles = gatherEnum("Titles", "titleString");
 		registrationTypes = gatherEnum("RegistrationType", "description");
+		lecturers = gatherLecturers();
+		if (lecturers == null)
+			return;
+
+		lecturerNames = new String[lecturers.length];
+		for (int i = 0; i < lecturers.length; i++)
+			lecturerNames[i] = lecturers[i].forename;
+
+	}
+
+	private PersonEntry[] gatherLecturers()
+	{
+		String query = "SELECT lecturerID, titleString, forename, familyName FROM Lecturer INNER JOIN Titles ON Lecturer.titleID = Titles.titleID";
+		ResultSet resultSet = connection.executeQuery(query);
+		if (resultSet == null) return null;
+
+		List<PersonEntry> results = new ArrayList<>();
+
+		try
+		{
+			while (resultSet.next())
+			{
+				String fullName = resultSet.getString(2).trim() + ". " + resultSet.getString(3).trim() + " " + resultSet.getString(4).trim();
+				int id = resultSet.getInt(1);
+				PersonEntry entry = new PersonEntry(Person.LECTURER, id, null, fullName, null, null);
+				results.add(entry);
+			}
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not gather lecturers" + e);
+			connection.logStackTrace(e);
+			return null;
+		}
+
+		PersonEntry[] ret = new PersonEntry[results.size()];
+		results.toArray(ret);
+
+		connection.fine("Gathered " + results.size() + " lecturers");
+
+		return ret;
 	}
 
 	private String[] gatherEnum(String table, String column)
@@ -124,6 +171,7 @@ public class DBModel extends Observable
 		} catch (SQLException e)
 		{
 			connection.severe("Could not gather enum values from table \"" + table + "\": " + e);
+			connection.logStackTrace(e);
 			return null;
 		}
 
@@ -169,7 +217,7 @@ public class DBModel extends Observable
 			ps.close();
 
 			// contacts
-			if (i.getFlag("hasNOK"))
+			if (i.getVar("hasNOK") == Boolean.TRUE)
 			{
 				ps = connection.prepareStatement("INSERT INTO NextOfKin (studentID, name, eMailAddress, postalAddress) VALUES (?, ?, ?, ?)");
 				ps.setInt(1, studentID);
@@ -181,7 +229,7 @@ public class DBModel extends Observable
 				ps.close();
 			}
 
-			if (i.getFlag("hasContact"))
+			if (i.getVar("hasContact") == Boolean.TRUE)
 			{
 				ps = connection.prepareStatement("INSERT INTO StudentContact (studentID, eMailAddress, postalAddress) VALUES (?, ?, ?)");
 				ps.setInt(1, studentID);
@@ -207,6 +255,7 @@ public class DBModel extends Observable
 		} catch (SQLException e)
 		{
 			connection.severe("Could not add student: " + e);
+			connection.logStackTrace(e);
 			return e.getMessage();
 		}
 	}
@@ -223,5 +272,45 @@ public class DBModel extends Observable
 			if (entry.id == id)
 				return true;
 		return false;
+	}
+
+	public String addTutor(PersonEntry student, UserInput input)
+	{
+		// not a student
+		if (student.person != Person.STUDENT)
+			return "Only students can have tutors";
+
+		try
+		{
+			PreparedStatement ps = connection.prepareStatement("INSERT INTO Tutor (studentID, lecturerID) VALUES (?, ?)");
+			ps.setInt(1, student.id);
+			ps.setInt(2, lecturers[input.<Integer>getValue("lecturerID")].id);
+			ps.executeUpdate();
+			connection.fine("Added student " + student.id + " to tutor group " + input.getValue("lecturerID"));
+			ps.close();
+
+			return null;
+		} catch (SQLException e)
+		{
+			connection.severe("Could not add tutor for student: " + e);
+			connection.logStackTrace(e);
+			return e.getMessage();
+		}
+	}
+
+	public void logInfo(String msg) {connection.info(msg);}
+
+	public void logSevere(String msg) {connection.severe(msg);}
+
+	public void logWarning(String msg) {connection.warning(msg);}
+
+	public void logFine(String msg) {connection.fine(msg);}
+
+	public void logStackTrace(Exception e) {connection.logStackTrace(e);}
+
+	public Integer getTutorID(int studentID)
+	{
+		// todo keep track of tutors, just like table entries
+		return 0;
 	}
 }

@@ -7,13 +7,15 @@ import java.awt.*;
 
 public class TextInputField extends StringInputField
 {
+	protected static final Dimension SIZE = new Dimension(180, 20);
+
 	public TextInputField(String key, String labelString, boolean mandatory, int maxLength)
 	{
 		super(key, labelString, mandatory, new JTextField());
 		if (maxLength > 0)
 			((JTextField) component).setDocument(new LimitedLengthDocument(maxLength));
 
-		component.setPreferredSize(new Dimension(180, 20));
+		component.setPreferredSize(SIZE);
 	}
 
 	@Override

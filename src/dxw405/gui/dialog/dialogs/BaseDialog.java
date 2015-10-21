@@ -7,6 +7,8 @@ import dxw405.gui.dialog.inputfields.InputField;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,11 +18,13 @@ public abstract class BaseDialog extends JDialog
 	private DialogType type;
 	private List<InputField> inputFields;
 
-	protected BaseDialog(DBModel dbModel, DialogType dialogType)
+	public BaseDialog(DBModel dbModel, DialogType dialogType, Object... extraArgs)
 	{
 		model = dbModel;
 		type = dialogType;
 		inputFields = new ArrayList<>();
+		if (extraArgs.length > 0)
+			parseExtraArgs(extraArgs);
 	}
 
 	/**
@@ -28,25 +32,32 @@ public abstract class BaseDialog extends JDialog
 	 *
 	 * @param dialogType The type of dialog box to open
 	 * @param model      The database model
+	 * @param extraArgs  Any extra arguments to pass to the dialog box
 	 * @return The user's input
 	 */
-	public static UserInput showDialog(DialogType dialogType, DBModel model)
+	public static UserInput showDialog(DialogType dialogType, DBModel model, Object... extraArgs)
 	{
-		BaseDialog dialog = null;
+		Class<? extends BaseDialog> dialogClass = dialogType.getDialogClass();
+		if (dialogClass == null)
+			throw new UnsupportedOperationException("Dialog not implemented");
 
-		switch (dialogType)
+		try
 		{
-			case ADD_STUDENT:
-				dialog = new AddStudentDialog(model);
-				break;
+			Constructor<?> constructor = dialogClass.getConstructor(DBModel.class, Object[].class);
+			BaseDialog dialog = (BaseDialog) constructor.newInstance(model, extraArgs);
+			return dialog.display();
 
-			case ADD_TUTOR:
-			case REPORT_STUDENT:
-			case REPORT_LECTURER:
-				throw new UnsupportedOperationException();
+		} catch (NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e)
+		{
+			model.logSevere("Could not instantiate dialog of type " + dialogType + ": " + e);
+			model.logStackTrace(e);
+			return null;
+
 		}
+	}
 
-		return dialog.display();
+	protected void parseExtraArgs(Object[] extraArgs)
+	{
 	}
 
 	/**
@@ -54,6 +65,7 @@ public abstract class BaseDialog extends JDialog
 	 *
 	 * @return The user's input
 	 */
+
 	protected UserInput display()
 	{
 		// create and show dialog

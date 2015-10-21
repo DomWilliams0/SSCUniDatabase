@@ -1,5 +1,8 @@
 package dxw405.gui;
 
+import dxw405.gui.dialog.DialogType;
+import dxw405.gui.dialog.UserInput;
+import dxw405.gui.dialog.dialogs.BaseDialog;
 import dxw405.util.Person;
 import dxw405.util.Utils;
 
@@ -148,7 +151,24 @@ public class DBTableComponent extends JPanel implements Observer
 			// add tutor
 			if (action == RightClickTableAction.ADD_TUTOR)
 			{
-				// todo
+				UserInput input = BaseDialog.showDialog(DialogType.ADD_TUTOR, model, entry);
+				if (input == null)
+					return;
+
+				// add to database
+				String errorMessage = model.addTutor(entry, input);
+				System.out.println("errorMessage = " + errorMessage);
+
+				// todo generalise
+				// popup success/failure dialog
+				//				boolean success = errorMessage == null;
+				//				if (success)
+				//					JOptionPane.showMessageDialog(this, "Successfully added " + fullName,
+				//							"Success", JOptionPane.INFORMATION_MESSAGE);
+				//				else
+				//					JOptionPane.showMessageDialog(this, "Couldn't add " + fullName + "\n" + errorMessage,
+				//							"Failure", JOptionPane.ERROR_MESSAGE);
+
 			}
 
 			// view report

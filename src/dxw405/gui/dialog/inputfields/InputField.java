@@ -61,6 +61,11 @@ public abstract class InputField
 	{
 		return key;
 	}
+
+	public void setEditable(boolean editable)
+	{
+		component.setEnabled(editable);
+	}
 }
 
 

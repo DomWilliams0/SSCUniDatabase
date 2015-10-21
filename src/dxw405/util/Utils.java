@@ -114,7 +114,7 @@ public class Utils
 					sb.append(s.toUpperCase()).append(" ");
 					break;
 				default:
-					sb.append(Character.toUpperCase(s.charAt(0))).append(s.substring(1).toLowerCase());
+					sb.append(Character.toUpperCase(s.charAt(0))).append(s.substring(1).toLowerCase()).append(" ");
 					break;
 			}
 		}

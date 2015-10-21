@@ -6,19 +6,19 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
- * A simple holder for an arbitary amount of input fields and flags, retrieved by String keys
+ * A simple holder for an input fields and variables, retrieved by String keys
  */
 public class UserInput
 {
 	private boolean valid;
 	private Map<String, InputField> values;
-	private Map<String, Boolean> flags;
+	private Map<String, Object> vars;
 
 	public UserInput()
 	{
 		valid = false;
 		values = new TreeMap<>();
-		flags = new TreeMap<>();
+		vars = new TreeMap<>();
 	}
 
 	public boolean isValid()
@@ -67,17 +67,17 @@ public class UserInput
 	/**
 	 * Sets the given flag to the given value
 	 */
-	public void setFlag(String key, boolean value) {flags.put(key, value);}
+	public void setVar(String key, Object value) {vars.put(key, value);}
 
 	/**
 	 * @param key The flag's key
 	 * @return The flag's value if it exists; an IllegalArgumentException will be thrown if it does not
 	 */
-	public boolean getFlag(String key)
+	public Object getVar(String key)
 	{
-		Boolean flag = flags.get(key);
-		if (flag == null)
+		Object var = vars.get(key);
+		if (var == null)
 			throw new IllegalArgumentException("Flag not found: " + key);
-		return flag;
+		return var;
 	}
 }

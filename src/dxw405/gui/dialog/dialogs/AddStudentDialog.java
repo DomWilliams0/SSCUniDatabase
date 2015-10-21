@@ -17,9 +17,9 @@ public class AddStudentDialog extends BaseDialog
 	// thank you stackoverflow http://stackoverflow.com/a/719543
 	private static Pattern EMAIL_REGEX = Pattern.compile("^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$");
 
-	public AddStudentDialog(DBModel dbModel)
+	public AddStudentDialog(DBModel dbModel, Object... extraArgs)
 	{
-		super(dbModel, DialogType.ADD_STUDENT);
+		super(dbModel, DialogType.ADD_STUDENT, extraArgs);
 	}
 
 	@Override
@@ -58,18 +58,14 @@ public class AddStudentDialog extends BaseDialog
 	@Override
 	protected void validateAndFlag(List<String> errors, UserInput i)
 	{
-		// no student id
-		if ((Integer) i.getValue("studentID") <= 0)
-			errors.add("Student ID must be supplied");
-
-			// student id already exists
-		else if (model.personExists(i.getValue("studentID")))
+		// student id already exists
+		if (model.personExists(i.getValue("studentID")))
 			errors.add("A student already exists with that ID");
 
 		// flags
-		i.setFlag("hasContact", !i.getField("contactEmail").hasNoValue() ||
+		i.setVar("hasContact", !i.getField("contactEmail").hasNoValue() ||
 				!i.getField("contactAddress").hasNoValue());
-		i.setFlag("hasNOK", !i.getField("nokName").hasNoValue() ||
+		i.setVar("hasNOK", !i.getField("nokName").hasNoValue() ||
 				!i.getField("nokEmail").hasNoValue() ||
 				!i.getField("nokAddress").hasNoValue());
 
@@ -121,7 +117,7 @@ public class AddStudentDialog extends BaseDialog
 	{
 		JPanel panel = new JPanel();
 
-		addField(panel, new NumberInputField("studentID", "Student ID", true, new SpinnerNumberModel(0, 0, Integer.MAX_VALUE, 1)));
+		addField(panel, new IDInputField("studentID", "Student ID", true, 0));
 		addField(panel, new TextInputField("contactEmail", "Email", false, 320));
 		addField(panel, new TextBoxInputField("contactAddress", "Address", false, 512));
 
