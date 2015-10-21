@@ -130,7 +130,7 @@ class DBTableModel extends DefaultTableModel
 			case 9:
 				return entry.getDOBFormatted();
 			case 10:
-				return entry.getPerson();
+				return entry.getPersonType();
 			default:
 				return "?";
 

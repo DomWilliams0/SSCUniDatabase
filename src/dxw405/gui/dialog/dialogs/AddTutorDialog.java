@@ -6,7 +6,7 @@ import dxw405.gui.dialog.DialogType;
 import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.inputfields.ChoiceInputField;
 import dxw405.gui.dialog.inputfields.IDInputField;
-import dxw405.util.Person;
+import dxw405.util.PersonType;
 
 import javax.swing.*;
 import java.util.List;
@@ -47,7 +47,7 @@ public class AddTutorDialog extends BaseDialog
 
 		// get tutor id
 		String lecturerName = model.getLecturerNames()[((int) input.getValue("lecturerID"))];
-		PersonEntry chosenTutor = model.getEntryFromFullName(lecturerName, Person.LECTURER);
+		PersonEntry chosenTutor = model.getEntryFromFullName(lecturerName, PersonType.LECTURER);
 		input.setVar("lecturerEntry", chosenTutor);
 
 		if (chosenTutor == null)

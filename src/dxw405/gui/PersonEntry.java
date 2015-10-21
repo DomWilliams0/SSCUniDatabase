@@ -1,13 +1,13 @@
 package dxw405.gui;
 
-import dxw405.util.Person;
+import dxw405.util.PersonType;
 import dxw405.util.Utils;
 
 import java.util.Date;
 
 public class PersonEntry
 {
-	private Person person;
+	private PersonType personType;
 	private int id;
 	private String title;
 	private String forename;
@@ -29,9 +29,9 @@ public class PersonEntry
 	/**
 	 * Normal constructor for common fields between students and stff
 	 */
-	public PersonEntry(Person person, int id, String title, String forename, String surname, String email)
+	public PersonEntry(PersonType personType, int id, String title, String forename, String surname, String email)
 	{
-		this.person = person;
+		this.personType = personType;
 		setID(id);
 		setTitle(title);
 		setForename(forename);
@@ -40,10 +40,11 @@ public class PersonEntry
 	}
 
 
-	public PersonEntry(Person person, int id, String title, String forename, String surname, String email, Integer yearOfStudy, String courseType, Date dob,
+	public PersonEntry(PersonType personType, int id, String title, String forename, String surname, String email, Integer yearOfStudy, String courseType,
+					   Date dob,
 					   Integer tutorID, String address, String nokName, String nokEmail, String nokAddress, String office)
 	{
-		this(person, id, title, forename, surname, email);
+		this(personType, id, title, forename, surname, email);
 		setYearOfStudy(yearOfStudy);
 		setCourseType(courseType);
 		setDOB(dob);
@@ -58,7 +59,7 @@ public class PersonEntry
 	public static PersonEntry addStudent(int id, String title, String forename, String surname, String email,
 										 Integer yearOfStudy, String courseType, Integer tutorID, Date dob)
 	{
-		PersonEntry entry = new PersonEntry(Person.STUDENT, id, title, forename, surname, email);
+		PersonEntry entry = new PersonEntry(PersonType.STUDENT, id, title, forename, surname, email);
 		entry.setYearOfStudy(yearOfStudy);
 		entry.setCourseType(courseType);
 		entry.setTutorID(tutorID);
@@ -68,7 +69,7 @@ public class PersonEntry
 
 	public static PersonEntry addLecturer(int id, String title, String forename, String surname, String email, String office)
 	{
-		PersonEntry entry = new PersonEntry(Person.STUDENT, id, title, forename, surname, email);
+		PersonEntry entry = new PersonEntry(PersonType.STUDENT, id, title, forename, surname, email);
 		entry.setOffice(office);
 		return entry;
 
@@ -80,9 +81,9 @@ public class PersonEntry
 	}
 
 
-	public Person getPerson()
+	public PersonType getPersonType()
 	{
-		return person;
+		return personType;
 	}
 
 	public int getID()

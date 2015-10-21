@@ -3,7 +3,7 @@ package dxw405.gui;
 import dxw405.gui.dialog.DialogType;
 import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.dialogs.BaseDialog;
-import dxw405.util.Person;
+import dxw405.util.PersonType;
 import dxw405.util.Utils;
 
 import javax.swing.*;
@@ -51,10 +51,10 @@ public class DBTableComponent extends JPanel implements Observer
 		switch (visibility)
 		{
 			case VISIBLE_STUDENTS:
-				desired = Person.STUDENT.toString().toUpperCase();
+				desired = PersonType.STUDENT.toString().toUpperCase();
 				break;
 			case VISIBLE_LECTURERS:
-				desired = Person.LECTURER.toString().toUpperCase();
+				desired = PersonType.LECTURER.toString().toUpperCase();
 				break;
 			default:
 				desired = null;
@@ -107,7 +107,7 @@ public class DBTableComponent extends JPanel implements Observer
 		JPopupMenu popup = new JPopupMenu();
 
 		// "title"
-		popup.add(new JMenuItem("<html><u>" + entry.getPerson().getTableName() + "</u></html>", null)
+		popup.add(new JMenuItem("<html><u>" + entry.getPersonType().getTableName() + "</u></html>", null)
 		{
 			@Override
 			public void menuSelectionChanged(boolean isIncluded)
@@ -122,7 +122,7 @@ public class DBTableComponent extends JPanel implements Observer
 		JMenuItem report = new JMenuItem(RightClickTableAction.VIEW_REPORT.toString());
 		report.addActionListener(listener);
 		popup.add(report);
-		if (entry.getPerson() == Person.STUDENT)
+		if (entry.getPersonType() == PersonType.STUDENT)
 		{
 			JMenuItem tutor = new JMenuItem(RightClickTableAction.ADD_TUTOR.toString());
 			tutor.addActionListener(listener);
@@ -166,7 +166,7 @@ public class DBTableComponent extends JPanel implements Observer
 			else if (action == RightClickTableAction.VIEW_REPORT)
 			{
 				DialogType reportType;
-				switch (entry.getPerson())
+				switch (entry.getPersonType())
 				{
 					case STUDENT:
 						reportType = DialogType.REPORT_STUDENT;

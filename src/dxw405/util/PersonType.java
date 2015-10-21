@@ -1,7 +1,6 @@
 package dxw405.util;
 
-// todo rename to PersonType
-public enum Person
+public enum PersonType
 {
 	STUDENT("studentID", "StudentContact", "Student"),
 	LECTURER("lecturerID", "LecturerContact", "Lecturer");
@@ -10,7 +9,7 @@ public enum Person
 	private final String contactTableName;
 	private final String tableName;
 
-	Person(String idName, String contactTableName, String tableName)
+	PersonType(String idName, String contactTableName, String tableName)
 	{
 
 		this.idName = idName;

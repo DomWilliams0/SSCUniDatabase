@@ -1,6 +1,6 @@
 package dxw405;
 
-import dxw405.util.Person;
+import dxw405.util.PersonType;
 import dxw405.util.RandomGenerator;
 import dxw405.util.Utils;
 
@@ -26,15 +26,15 @@ public class DBCreation
 	private int titleCount;
 	private int registrationTypeCount;
 
-	private EnumMap<Person, List<Integer>> personIDs;
+	private EnumMap<PersonType, List<Integer>> personIDs;
 
 	public DBCreation(DBConnection connection)
 	{
 		this.connection = connection;
 		this.randomNames = null;
-		this.personIDs = new EnumMap<>(Person.class);
+		this.personIDs = new EnumMap<>(PersonType.class);
 
-		for (Person p : Person.values())
+		for (PersonType p : PersonType.values())
 			personIDs.put(p, new ArrayList<>());
 	}
 
@@ -113,9 +113,9 @@ public class DBCreation
 		try
 		{
 			// create students and lecturers
-			addRandomPeople(Person.STUDENT, studentCount, 1433000);
+			addRandomPeople(PersonType.STUDENT, studentCount, 1433000);
 			connection.info("Created " + studentCount + " random students");
-			addRandomPeople(Person.LECTURER, lecturerCount, 1252000);
+			addRandomPeople(PersonType.LECTURER, lecturerCount, 1252000);
 			connection.info("Created " + lecturerCount + " random lecturers");
 
 			// student registrations
@@ -142,8 +142,8 @@ public class DBCreation
 	 */
 	private void addTutors() throws SQLException
 	{
-		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
-		List<Integer> lecturerIDs = personIDs.get(Person.LECTURER);
+		List<Integer> studentIDs = personIDs.get(PersonType.STUDENT);
+		List<Integer> lecturerIDs = personIDs.get(PersonType.LECTURER);
 		final int studentCount = studentIDs.size();
 		final int lecturerCount = lecturerIDs.size();
 
@@ -211,7 +211,7 @@ public class DBCreation
 
 	private void addNextOfKins() throws SQLException
 	{
-		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
+		List<Integer> studentIDs = personIDs.get(PersonType.STUDENT);
 		String[] names = randomNames.takeNames(studentIDs.size() * 2);
 
 		String cmd = "INSERT INTO NextOfKin (studentID, name, eMailAddress, postalAddress) VALUES (?, ?, ?, ?)";
@@ -248,23 +248,23 @@ public class DBCreation
 	 */
 	private void addContacts() throws SQLException
 	{
-		addContacts(Person.STUDENT, RandomGenerator.GEN_EMAIL_BHAM, RandomGenerator.GEN_POSTAL);
-		addContacts(Person.LECTURER, RandomGenerator.GEN_OFFICE, RandomGenerator.GEN_EMAIL_BHAM);
+		addContacts(PersonType.STUDENT, RandomGenerator.GEN_EMAIL_BHAM, RandomGenerator.GEN_POSTAL);
+		addContacts(PersonType.LECTURER, RandomGenerator.GEN_OFFICE, RandomGenerator.GEN_EMAIL_BHAM);
 	}
 
 	/**
 	 * Adds a Student/LecturerContact
 	 *
-	 * @param person      Person type
+	 * @param personType      Person type
 	 * @param secondValue 2nd column value
 	 * @param thirdValue  3rd column value
 	 */
-	private void addContacts(Person person, RandomGenerator secondValue, RandomGenerator thirdValue) throws SQLException
+	private void addContacts(PersonType personType, RandomGenerator secondValue, RandomGenerator thirdValue) throws SQLException
 	{
 		final String query = "INSERT INTO %s VALUES (?, ?, ?)";
-		PreparedStatement ps = connection.prepareStatement(String.format(query, person.getContactTableName()));
+		PreparedStatement ps = connection.prepareStatement(String.format(query, personType.getContactTableName()));
 
-		List<Integer> ids = personIDs.get(person);
+		List<Integer> ids = personIDs.get(personType);
 		for (Integer id : ids)
 		{
 			ps.setInt(1, id);
@@ -279,7 +279,7 @@ public class DBCreation
 		ps.executeBatch();
 		ps.close();
 
-		connection.info("Added " + ids.size() + " " + person.getTableName().toLowerCase() + "s");
+		connection.info("Added " + ids.size() + " " + personType.getTableName().toLowerCase() + "s");
 	}
 
 
@@ -288,7 +288,7 @@ public class DBCreation
 	 */
 	private void addStudentRegistrations() throws SQLException
 	{
-		List<Integer> studentIDs = personIDs.get(Person.STUDENT);
+		List<Integer> studentIDs = personIDs.get(PersonType.STUDENT);
 		String cmd = "INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)";
 		PreparedStatement ps = connection.prepareStatement(cmd);
 
@@ -317,18 +317,19 @@ public class DBCreation
 	/**
 	 * Generates random people
 	 *
-	 * @param person     Person type
+	 * @param personType     Person type
 	 * @param count      Number of people to generate
 	 * @param startingID Person ID to start at
 	 */
-	private void addRandomPeople(Person person, int count, int startingID) throws SQLException
+	private void addRandomPeople(PersonType personType, int count, int startingID) throws SQLException
 	{
-		String command = person == Person.STUDENT ? "INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)" : "INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
+		String command = personType == PersonType.STUDENT ? "INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, " +
+				"?)" : "INSERT INTO Lecturer (lecturerID, titleID, forename, familyName) " + "VALUES (?, ?, ?, ?)";
 		PreparedStatement ps = connection.prepareStatement(command);
 
 		String[] names = randomNames.takeNames(count * 2);
 		int lastID = startingID;
-		List<Integer> ids = personIDs.get(person);
+		List<Integer> ids = personIDs.get(personType);
 
 		for (int i = 0; i < names.length - 1; i += 2)
 		{
@@ -337,7 +338,7 @@ public class DBCreation
 			int titleID = Utils.RANDOM.nextInt(titleCount) + 1;
 			String forename = names[i];
 			String surname = names[i + 1];
-			Date dob = person == Person.LECTURER ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
+			Date dob = personType == PersonType.LECTURER ? null : new Date(MIN_DATE + (long) (Utils.RANDOM.nextFloat() * (MAX_DATE - MIN_DATE)));
 
 			// execute
 			ps.setInt(1, id);
@@ -349,7 +350,7 @@ public class DBCreation
 			ps.addBatch();
 			ids.add(id);
 
-			connection.finer("Added " + person.getTableName().toLowerCase() + " " + forename + " " + surname);
+			connection.finer("Added " + personType.getTableName().toLowerCase() + " " + forename + " " + surname);
 		}
 
 		ps.executeBatch();
