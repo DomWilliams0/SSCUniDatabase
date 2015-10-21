@@ -23,7 +23,8 @@ SELECT
   titleString,
   forename,
   familyname,
-  eMailAddress
+  eMailAddress,
+  office
 FROM Lecturer
   INNER JOIN Titles ON Titles.titleId = Lecturer.titleId
   INNER JOIN LecturerContact ON LecturerContact.lecturerID = Lecturer.lecturerID

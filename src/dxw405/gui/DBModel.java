@@ -79,6 +79,7 @@ public class DBModel extends Observable
 					String courseType = null;
 					Integer tutorID = null;
 					java.util.Date dob = null;
+					String office = null;
 
 					if (person == Person.STUDENT)
 					{
@@ -86,10 +87,11 @@ public class DBModel extends Observable
 						yearOfStudy = resultSet.getInt(8);
 						courseType = resultSet.getString(9);
 						tutorID = resultSet.getInt(10);
-					}
+					} else
+						office = resultSet.getString(7);
 
 
-					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, tutorID, dob));
+					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, tutorID, dob, office));
 				}
 			}
 
@@ -215,7 +217,7 @@ public class DBModel extends Observable
 			{
 				int id = resultSet.getInt(1);
 				results.add(PersonEntry.addLecturer(id, resultSet.getString(2), resultSet.getString(3),
-						resultSet.getString(4), resultSet.getString(5)));
+						resultSet.getString(4), resultSet.getString(5), resultSet.getString(6)));
 			}
 
 		} catch (SQLException e)
