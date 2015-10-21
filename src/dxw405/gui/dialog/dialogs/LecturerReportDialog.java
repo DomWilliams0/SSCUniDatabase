@@ -7,13 +7,16 @@ import dxw405.gui.dialog.inputfields.ChoiceInputField;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class LecturerReportDialog extends ReportDialog
+public class LecturerReportDialog extends ReportDialog implements ActionListener
 {
+	private JPanel cardPanel;
 	private CardLayout cardLayout;
 	private Map<Integer, List<PersonEntry>> tutees;
 
@@ -26,8 +29,6 @@ public class LecturerReportDialog extends ReportDialog
 	@Override
 	protected JPanel createInterface()
 	{
-		// todo personal details at top, year combobox, scrollpane of report-like panels for students
-
 		JPanel container = new JPanel(new BorderLayout());
 
 		container.add(getHeaderPanel(), BorderLayout.PAGE_START);
@@ -39,12 +40,12 @@ public class LecturerReportDialog extends ReportDialog
 	private JPanel getTuteePanel()
 	{
 		cardLayout = new CardLayout();
-		JPanel panel = new JPanel(cardLayout);
+		cardPanel = new JPanel(cardLayout);
 
 		for (Map.Entry<Integer, List<PersonEntry>> tuteeEntry : tutees.entrySet())
-			panel.add(createTuteeReports(tuteeEntry.getValue()), String.valueOf(tuteeEntry.getKey()));
+			cardPanel.add(createTuteeReports(tuteeEntry.getValue()), String.valueOf(tuteeEntry.getKey()));
 
-		return panel;
+		return cardPanel;
 	}
 
 	private void gatherTuteeYears()
@@ -90,8 +91,8 @@ public class LecturerReportDialog extends ReportDialog
 			c.fill = GridBagConstraints.HORIZONTAL;
 
 			c.gridy = 0;
-			addLabel(tuteeReport, "ID", tutee.getIDString(), c);
 			addLabel(tuteeReport, "Name", tutee.getFullName(), c);
+			addLabel(tuteeReport, "ID", tutee.getIDString(), c);
 
 			c.gridy = 1;
 			addLabel(tuteeReport, "DOB", tutee.getDOBFormatted(), c);
@@ -146,9 +147,17 @@ public class LecturerReportDialog extends ReportDialog
 		for (int i = 0; i < intChoices.length; i++)
 			yearChoices[i] = intChoices[i].toString();
 
-		addField(panel, new ChoiceInputField("yos", "Year Of Study", false, yearChoices, 0));
+		JComboBox choice = (JComboBox) addField(panel, new ChoiceInputField("yos", "Year Of Study", false, yearChoices, 0)).getField();
+		choice.addActionListener(this);
+
 
 		return panel;
 	}
 
+	@Override
+	public void actionPerformed(ActionEvent e)
+	{
+		Integer year = Integer.parseInt((String) ((JComboBox) e.getSource()).getSelectedItem());
+		cardLayout.show(cardPanel, year.toString());
+	}
 }
