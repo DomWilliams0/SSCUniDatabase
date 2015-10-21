@@ -231,7 +231,7 @@ public class DBCreation
 
 			ps.addBatch();
 
-			connection.fine("Added next of kin for " + studentID);
+			connection.finer("Added next of kin for " + studentID);
 
 			nameIndex += 2;
 		}
@@ -273,7 +273,7 @@ public class DBCreation
 
 			ps.addBatch();
 
-			connection.fine("Added contact for " + id);
+			connection.finer("Added contact for " + id);
 		}
 
 		ps.executeBatch();
@@ -303,7 +303,7 @@ public class DBCreation
 
 			ps.addBatch();
 
-			connection.fine("Added StudentRegistration for " + studentID);
+			connection.finer("Added StudentRegistration for " + studentID);
 
 		}
 
@@ -349,7 +349,7 @@ public class DBCreation
 			ps.addBatch();
 			ids.add(id);
 
-			connection.fine("Added " + person.getTableName().toLowerCase() + " " + forename + " " + surname);
+			connection.finer("Added " + person.getTableName().toLowerCase() + " " + forename + " " + surname);
 		}
 
 		ps.executeBatch();
