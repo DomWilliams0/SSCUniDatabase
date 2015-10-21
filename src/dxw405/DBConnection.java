@@ -194,7 +194,7 @@ public class DBConnection implements AutoCloseable
 
 
 	/**
-	 * Executes the commands sequentially in the given file, and logs commands to FINE
+	 * Executes the commands sequentially in the given file, and logs commands to FINER
 	 *
 	 * @param file The input SQL file
 	 * @return If the operation succeeded
@@ -202,7 +202,7 @@ public class DBConnection implements AutoCloseable
 
 	public boolean executeUpdateFromFile(File file)
 	{
-		return executeUpdateFromFile(file, Level.FINE);
+		return executeUpdateFromFile(file, Level.FINER);
 	}
 
 	/**
@@ -337,6 +337,8 @@ public class DBConnection implements AutoCloseable
 		logger.fine(msg);
 	}
 
+	public void finer(String msg) {logger.finer(msg);}
+
 	/**
 	 * Gets the relative path to the SQL file corresponding to the given config key
 	 *
@@ -386,7 +388,7 @@ public class DBConnection implements AutoCloseable
 	}
 
 	/**
-	 * Logs the given exception's stack trace at FINE
+	 * Logs the given exception's stack trace at INFO
 	 *
 	 * @param e The exception
 	 */
@@ -396,7 +398,7 @@ public class DBConnection implements AutoCloseable
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		e.printStackTrace(pw);
-		logger.log(Level.FINE, "\n" + wrapper + "\n" + sw.toString() + wrapper);
+		logger.log(Level.INFO, "\n" + wrapper + "\n" + sw.toString() + wrapper);
 	}
 }
 

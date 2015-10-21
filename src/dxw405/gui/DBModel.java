@@ -10,9 +10,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Observable;
+import java.util.*;
 import java.util.logging.Level;
 
 public class DBModel extends Observable
@@ -20,7 +18,7 @@ public class DBModel extends Observable
 	private String[] titles;
 	private String[] registrationTypes;
 	private PersonEntry[] lecturers;
-	private String[] lecturerNames;
+	private Map<Integer, Integer> tutors;
 
 	private DBConnection connection;
 	private List<PersonEntry> tableEntries;
@@ -41,6 +39,7 @@ public class DBModel extends Observable
 		tableEntries.clear();
 
 		String errorMessage = addEntries(connection.getSQLPath("sql-populate-tables"));
+		updateTutors();
 
 		setChanged();
 		notifyObservers(errorMessage);
@@ -70,18 +69,26 @@ public class DBModel extends Observable
 					if (person == null) throw new SQLException("Bad person type specified in query (" + personType + ")");
 
 					int id = resultSet.getInt(2);
-					String title = resultSet.getString(3).trim();
-					String forename = resultSet.getString(4).trim();
-					String surname = resultSet.getString(5).trim();
+					String title = resultSet.getString(3);
+					String forename = resultSet.getString(4);
+					String surname = resultSet.getString(5);
+					String email = resultSet.getString(6);
 
+					Integer yearOfStudy = null;
+					String courseType = null;
+					Integer tutorID = null;
 					java.util.Date dob = null;
-					if (resultSet.getMetaData().getColumnCount() > 5)
+
+					if (person == Person.STUDENT)
 					{
-						Date sqlDOB = resultSet.getDate(6);
-						dob = new java.util.Date(sqlDOB.getTime());
+						dob = new java.util.Date(resultSet.getDate(7).getTime());
+						yearOfStudy = resultSet.getInt(8);
+						courseType = resultSet.getString(9);
+						tutorID = resultSet.getInt(10);
 					}
 
-					tableEntries.add(new PersonEntry(person, id, title, forename, surname, dob));
+
+					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, tutorID, dob));
 				}
 			}
 
@@ -107,7 +114,11 @@ public class DBModel extends Observable
 
 	public String[] getLecturerNames()
 	{
-		return lecturerNames;
+		String[] s = new String[tutors.size()];
+		int i = 0;
+		for (PersonEntry tutor : lecturers)
+			s[i++] = tutor.getFullName();
+		return s;
 	}
 
 	public void gatherEnums()
@@ -115,20 +126,61 @@ public class DBModel extends Observable
 		titles = gatherEnum("Titles", "titleString");
 		registrationTypes = gatherEnum("RegistrationType", "description");
 		lecturers = gatherLecturers();
-		if (lecturers == null)
-			return;
+	}
 
-		lecturerNames = new String[lecturers.length];
-		for (int i = 0; i < lecturers.length; i++)
-			lecturerNames[i] = lecturers[i].forename;
+	private void updateTutors()
+	{
+		if (tutors != null)
+			tutors.clear();
+		else
+			tutors = new HashMap<>();
 
+		ResultSet resultSet = connection.executeQuery("SELECT studentID, lecturerID FROM Tutor ORDER BY lecturerID");
+		if (resultSet == null) return;
+
+		try
+		{
+			while (resultSet.next())
+			{
+				int studentID = resultSet.getInt(1);
+				int lecturerID = resultSet.getInt(2);
+
+				tutors.put(studentID, lecturerID);
+			}
+		} catch (SQLException e)
+		{
+			connection.severe("Could not update tutor map: " + e);
+			connection.logStackTrace(e);
+		}
+	}
+
+
+	public Integer getTutorID(int studentID)
+	{
+		return tutors.get(studentID);
+	}
+
+	/**
+	 * Finds the person with the given ID
+	 *
+	 * @param id The ID
+	 * @return The Person, or null if not found
+	 */
+	private PersonEntry getEntryFromID(int id)
+	{
+		for (PersonEntry entry : tableEntries)
+			if (id == entry.id)
+				return entry;
+
+		connection.severe("Could not find entry with id " + id);
+		return null;
 	}
 
 	private PersonEntry[] gatherLecturers()
 	{
-		String query = "SELECT lecturerID, titleString, forename, familyName FROM Lecturer INNER JOIN Titles ON Lecturer.titleID = Titles.titleID";
-		ResultSet resultSet = connection.executeQuery(query);
-		if (resultSet == null) return null;
+		ResultSet[] resultSets = connection.executeQueriesFromFile(new File(connection.getSQLPath("sql-get-lecturers")));
+		if (resultSets == null) return null;
+		ResultSet resultSet = resultSets[0];
 
 		List<PersonEntry> results = new ArrayList<>();
 
@@ -136,10 +188,9 @@ public class DBModel extends Observable
 		{
 			while (resultSet.next())
 			{
-				String fullName = resultSet.getString(2).trim() + ". " + resultSet.getString(3).trim() + " " + resultSet.getString(4).trim();
 				int id = resultSet.getInt(1);
-				PersonEntry entry = new PersonEntry(Person.LECTURER, id, null, fullName, null, null);
-				results.add(entry);
+				results.add(PersonEntry.addLecturer(id, resultSet.getString(2), resultSet.getString(3),
+						resultSet.getString(4), resultSet.getString(5)));
 			}
 
 		} catch (SQLException e)
@@ -195,22 +246,25 @@ public class DBModel extends Observable
 		{
 			PreparedStatement ps;
 			final int studentID = i.getValue("studentID");
+			String surname = i.getValue("surname");
+			String forename = i.getValue("forename");
 
 			// add student
 			ps = connection.prepareStatement("INSERT INTO Student (studentID, titleID, forename, familyName, dateOfBirth) VALUES (?, ?, ?, ?, ?)");
 			ps.setInt(1, studentID);
 			ps.setInt(2, i.<Integer>getValue("titleID") + 1);
-			ps.setString(3, i.getValue("forename"));
-			ps.setString(4, i.getValue("surname"));
+			ps.setString(3, forename);
+			ps.setString(4, surname);
 			ps.setDate(5, new Date(i.<java.util.Date>getValue("dob").getTime()));
 			ps.executeUpdate();
 			connection.fine("Added student " + studentID + " to Student");
 			ps.close();
 
 			// course
+			int yearOfStudy = i.<Integer>getValue("yearOfStudy") + 1;
 			ps = connection.prepareStatement("INSERT INTO StudentRegistration (studentID, yearOfStudy, registrationTypeID) VALUES (?, ?, ?)");
 			ps.setInt(1, studentID);
-			ps.setInt(2, i.<Integer>getValue("yearOfStudy") + 1);
+			ps.setInt(2, yearOfStudy);
 			ps.setInt(3, i.<Integer>getValue("courseTypeID") + 1);
 			ps.executeUpdate();
 			connection.fine("Added StudentRegistration for " + studentID);
@@ -229,7 +283,8 @@ public class DBModel extends Observable
 				ps.close();
 			}
 
-			if (i.getVar("hasContact") == Boolean.TRUE)
+			boolean hasContact = i.getVar("hasContact") == Boolean.TRUE;
+			if (hasContact)
 			{
 				ps = connection.prepareStatement("INSERT INTO StudentContact (studentID, eMailAddress, postalAddress) VALUES (?, ?, ?)");
 				ps.setInt(1, studentID);
@@ -243,7 +298,10 @@ public class DBModel extends Observable
 
 			// create entry and add
 			String title = titles[i.<Integer>getValue("titleID")];
-			tableEntries.add(new PersonEntry(Person.STUDENT, studentID, title, i.getValue("forename"), i.getValue("surname"), i.getValue("dob")));
+			String email = hasContact ? i.getValue("contactAddress") : null;
+			String courseType = registrationTypes[i.<Integer>getValue("courseTypeID")];
+			java.util.Date dob = i.getValue("dob");
+			tableEntries.add(PersonEntry.addStudent(studentID, title, forename, surname, email, yearOfStudy, courseType, null, dob));
 
 			// update observers
 			setChanged();
@@ -308,9 +366,4 @@ public class DBModel extends Observable
 
 	public void logStackTrace(Exception e) {connection.logStackTrace(e);}
 
-	public Integer getTutorID(int studentID)
-	{
-		// todo keep track of tutors, just like table entries
-		return 0;
-	}
 }

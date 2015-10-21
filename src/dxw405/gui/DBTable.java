@@ -31,13 +31,13 @@ public class DBTable extends JTable
 		TableRowSorter<DBTableModel> sorter = new TableRowSorter<>(tableModel);
 		sorter.setRowFilter(filter);
 		setRowSorter(sorter);
+		// todo auto resize columns
 	}
 }
 
 class DBTableModel extends DefaultTableModel
 {
-	// todo add all
-	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "DOB"};
+	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "Email", "Year", "Course Type", "Tutor", "DOB"};
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
 
 	private List<PersonEntry> entries;
@@ -87,8 +87,16 @@ class DBTableModel extends DefaultTableModel
 			case 3:
 				return entry.surname;
 			case 4:
-				return entry.dob == null ? null : DATE_FORMAT.format(entry.dob);
+				return entry.email;
 			case 5:
+				return entry.yearOfStudy;
+			case 6:
+				return entry.courseType;
+			case 7:
+				return entry.tutorID;
+			case 8:
+				return entry.dob == null ? null : DATE_FORMAT.format(entry.dob);
+			case 9:
 				return entry.person;
 			default:
 				return "?";
