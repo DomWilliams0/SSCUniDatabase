@@ -1,24 +1,51 @@
 package dxw405.gui;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
+import javax.swing.table.*;
+import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DBTable extends JTable
 {
+	private static final int MIN_COL_WIDTH = 20;
+	private static final int MAX_COL_WIDTH = 150;
+
 	private DBTableModel tableModel;
 
 	public DBTable()
 	{
-		tableModel = new DBTableModel();
+		tableModel = new DBTableModel(this);
 		setModel(tableModel);
 
 		// sorting
 		setAutoCreateRowSorter(true);
 	}
+
+	public void autofit()
+	{
+		TableColumnModel columnModel = getColumnModel();
+
+		for (int i = 0; i < columnModel.getColumnCount(); i++)
+		{
+			int width = MIN_COL_WIDTH;
+			for (int j = 0; j < getRowCount(); j++)
+			{
+				TableCellRenderer renderer = getCellRenderer(j, i);
+				Component comp = prepareRenderer(renderer, j, i);
+
+				int widthPref = comp.getPreferredSize().width;
+				width = Math.max(widthPref + 1, width);
+			}
+
+			TableColumn column = columnModel.getColumn(i);
+			column.setMinWidth(MIN_COL_WIDTH);
+			column.setPreferredWidth(width);
+			column.setMaxWidth(MAX_COL_WIDTH);
+		}
+	}
+
 
 	@Override
 	public boolean isCellEditable(int row, int column)
@@ -31,7 +58,6 @@ public class DBTable extends JTable
 		TableRowSorter<DBTableModel> sorter = new TableRowSorter<>(tableModel);
 		sorter.setRowFilter(filter);
 		setRowSorter(sorter);
-		// todo auto resize columns
 	}
 }
 
@@ -39,11 +65,13 @@ class DBTableModel extends DefaultTableModel
 {
 	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "Email", "Year", "Course Type", "Tutor", "DOB"};
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/yyyy");
+	private DBTable table;
 
 	private List<PersonEntry> entries;
 
-	public DBTableModel()
+	public DBTableModel(DBTable table)
 	{
+		this.table = table;
 		this.entries = new ArrayList<>();
 		setColumnIdentifiers(COLUMNS);
 	}
@@ -56,6 +84,7 @@ class DBTableModel extends DefaultTableModel
 	public void setEntries(List<PersonEntry> entries)
 	{
 		this.entries = entries;
+		table.autofit();
 		fireTableDataChanged();
 	}
 
