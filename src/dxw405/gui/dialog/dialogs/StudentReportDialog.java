@@ -71,7 +71,7 @@ public class StudentReportDialog extends ReportDialog
 		JPanel panel = new JPanel();
 
 		// id, name, dob
-		addLabel(panel, "ID", String.valueOf(entry.getID()));
+		addLabel(panel, "ID", entry.getIDString());
 		addLabel(panel, "Name", entry.getFullName());
 		addLabel(panel, "DOB", entry.getDOBFormatted());
 

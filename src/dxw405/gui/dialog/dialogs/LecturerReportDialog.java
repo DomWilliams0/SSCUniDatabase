@@ -97,6 +97,8 @@ public class LecturerReportDialog extends ReportDialog
 			JPanel tuteeReport = new JPanel(new GridBagLayout());
 			GridBagConstraints c = new GridBagConstraints();
 
+			addLabel(tuteeReport, "ID", tutee.getIDString());
+
 			parent.add(tuteeReport);
 		}
 
@@ -107,7 +109,7 @@ public class LecturerReportDialog extends ReportDialog
 	{
 		JPanel panel = new JPanel();
 
-		addLabel(panel, "ID", String.valueOf(entry.getID()));
+		addLabel(panel, "ID", entry.getIDString());
 		addLabel(panel, "Name", entry.getFullName());
 		addLabel(panel, "Office", entry.getOffice());
 

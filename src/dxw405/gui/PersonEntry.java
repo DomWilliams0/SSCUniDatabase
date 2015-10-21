@@ -91,6 +91,11 @@ public class PersonEntry
 		return id;
 	}
 
+	public String getIDString()
+	{
+		return Integer.toString(id);
+	}
+
 	public void setID(int id)
 	{
 		this.id = id;
