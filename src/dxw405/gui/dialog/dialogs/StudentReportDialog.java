@@ -4,7 +4,6 @@ import dxw405.gui.DBModel;
 import dxw405.gui.dialog.DialogType;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class StudentReportDialog extends ReportDialog
 {
@@ -16,16 +15,12 @@ public class StudentReportDialog extends ReportDialog
 	@Override
 	protected JPanel createInterface()
 	{
-		JPanel panel = new JPanel(new GridBagLayout());
+		JPanel panel = new JPanel();
 
-		GridBagConstraints c = new GridBagConstraints();
-		c.fill = GridBagConstraints.HORIZONTAL;
-		c.anchor = GridBagConstraints.PAGE_START;
-
-		panel.add(addSectionTitle(getPersonalPanel(), "Personal"), c);
-		panel.add(addSectionTitle(getCoursePanel(), "Course"), c);
-		panel.add(addSectionTitle(getContactPanel(), "Contact"), c);
-		panel.add(addSectionTitle(getNOKPanel(), "Emergency Contact"), c);
+		panel.add(addSectionTitle(getPersonalPanel(), "Personal"));
+		panel.add(addSectionTitle(getCoursePanel(), "Course"));
+		panel.add(addSectionTitle(getContactPanel(), "Contact"));
+		panel.add(addSectionTitle(getNOKPanel(), "Emergency Contact"));
 
 		return panel;
 	}
@@ -33,6 +28,7 @@ public class StudentReportDialog extends ReportDialog
 	private JPanel getNOKPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		// name, email, address
 		addLabel(panel, "Name", entry.getNOKName());
@@ -45,6 +41,7 @@ public class StudentReportDialog extends ReportDialog
 	private JPanel getContactPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		// email and address
 		addLabel(panel, "Email", entry.getEmail());
@@ -57,6 +54,7 @@ public class StudentReportDialog extends ReportDialog
 	private JPanel getCoursePanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		// tutor, year, course
 		addLabel(panel, "Tutor", entry.getTutorName());
@@ -69,6 +67,7 @@ public class StudentReportDialog extends ReportDialog
 	private JPanel getPersonalPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		// id, name, dob
 		addLabel(panel, "ID", entry.getIDString());

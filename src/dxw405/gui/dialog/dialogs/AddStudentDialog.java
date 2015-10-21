@@ -93,6 +93,7 @@ public class AddStudentDialog extends BaseDialog
 	private JPanel getDetailsPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		// name
 		addField(panel, new ChoiceInputField("titleID", "Title", true, model.getTitles(), 0));
@@ -116,6 +117,7 @@ public class AddStudentDialog extends BaseDialog
 	private JPanel getContactsPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		addField(panel, new IDInputField("studentID", "Student ID", true, 0));
 		addField(panel, new TextInputField("contactEmail", "Email", false, 320));
@@ -131,6 +133,7 @@ public class AddStudentDialog extends BaseDialog
 	private JPanel getCourseDetailsPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		addField(panel, new ChoiceInputField("yearOfStudy", "Year of Study", false, range(1, 6), 0));
 		addField(panel, new ChoiceInputField("courseTypeID", "Course Type", false, model.getRegistrationTypes(), 0));
@@ -160,6 +163,7 @@ public class AddStudentDialog extends BaseDialog
 	private JPanel getNextOfKinPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		addField(panel, new TextInputField("nokName", "Name", false, 64));
 		addField(panel, new TextInputField("nokEmail", "Email", false, 320));

@@ -171,34 +171,39 @@ public abstract class BaseDialog extends JDialog
 		TitledBorder border = new TitledBorder(title);
 		border.setTitlePosition(TitledBorder.TOP);
 		panel.setBorder(border);
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		return panel;
 	}
 
 	/**
 	 * Adds the given field to the given panel along with some spacing, and registers the field with the dialog box
 	 *
-	 * @param panel The panel to add to
-	 * @param field The field
+	 * @param panel       The panel to add to
+	 * @param field       The field
+	 * @param constraints Any constraints for the panel's layout manager
 	 * @return The field
 	 */
-	protected InputField addField(JPanel panel, InputField field)
+	protected InputField addField(JPanel panel, InputField field, Object constraints)
 	{
 		// centre the label
 		Box box = Box.createHorizontalBox();
 		box.add(field.getLabel());
 		box.add(Box.createHorizontalBox());
-		panel.add(box);
+		panel.add(box, constraints);
 
 		// add field
-		panel.add(field.getField());
+		panel.add(field.getField(), constraints);
 
 		// add spacing
-		panel.add(Box.createVerticalStrut(4));
+		panel.add(Box.createVerticalStrut(4), constraints);
 
 		inputFields.add(field);
 
 		return field;
+	}
+
+	protected InputField addField(JPanel panel, InputField field)
+	{
+		return addField(panel, field, null);
 	}
 
 }

@@ -31,8 +31,14 @@ public abstract class ReportDialog extends BaseDialog
 		// no validation needed
 	}
 
+	protected InputField addLabel(JPanel panel, String label, String value, Object constraints)
+	{
+		return addField(panel, new TextInputField(label, label, false, -1), constraints).setValue(value == null ? "" : value).setEditable(false);
+
+	}
+
 	protected InputField addLabel(JPanel panel, String label, String value)
 	{
-		return addField(panel, new TextInputField(label, label, false, -1)).setValue(value == null ? "" : value).setEditable(false);
+		return addLabel(panel, label, value, null);
 	}
 }

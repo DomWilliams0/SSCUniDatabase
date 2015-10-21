@@ -3,6 +3,7 @@ package dxw405.gui.dialog.dialogs;
 import dxw405.gui.DBModel;
 import dxw405.gui.PersonEntry;
 import dxw405.gui.dialog.DialogType;
+import dxw405.gui.dialog.inputfields.ChoiceInputField;
 
 import javax.swing.*;
 import java.awt.*;
@@ -14,10 +15,12 @@ import java.util.Map;
 public class LecturerReportDialog extends ReportDialog
 {
 	private CardLayout cardLayout;
+	private Map<Integer, List<PersonEntry>> tutees;
 
 	public LecturerReportDialog(DBModel dbModel, Object... extraArgs)
 	{
 		super(dbModel, DialogType.REPORT_LECTURER, extraArgs);
+		gatherTuteeYears();
 	}
 
 	@Override
@@ -25,38 +28,29 @@ public class LecturerReportDialog extends ReportDialog
 	{
 		// todo personal details at top, year combobox, scrollpane of report-like panels for students
 
-		JPanel container = new JPanel(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		c.anchor = GridBagConstraints.NORTHEAST;
+		JPanel container = new JPanel(new BorderLayout());
 
-		// personal details at top
-		container.add(getPersonalPanel(), c);
-
-		c.gridy = 1;
-		c.gridheight = 2;
-		container.add(getTuteePanel(), c);
+		container.add(getHeaderPanel(), BorderLayout.PAGE_START);
+		container.add(getTuteePanel(), BorderLayout.CENTER);
 
 		return container;
 	}
 
 	private JPanel getTuteePanel()
 	{
-		// gather years
-		Map<Integer, List<PersonEntry>> tutees = new HashMap<>();
-		gatherTuteeYears(tutees);
-
 		cardLayout = new CardLayout();
 		JPanel panel = new JPanel(cardLayout);
 
 		for (Map.Entry<Integer, List<PersonEntry>> tuteeEntry : tutees.entrySet())
 			panel.add(createTuteeReports(tuteeEntry.getValue()), String.valueOf(tuteeEntry.getKey()));
 
-
 		return panel;
 	}
 
-	private void gatherTuteeYears(Map<Integer, List<PersonEntry>> tutees)
+	private void gatherTuteeYears()
 	{
+		tutees = new HashMap<>();
+
 		Map<Integer, Integer> tutors = model.getTutors();
 		for (Map.Entry<Integer, Integer> tutorEntry : tutors.entrySet())
 		{
@@ -66,6 +60,8 @@ public class LecturerReportDialog extends ReportDialog
 			PersonEntry studentEntry = model.getEntryFromID(tutorEntry.getKey());
 			if (studentEntry == null)
 				continue;
+
+			model.populateStudent(studentEntry);
 
 			List<PersonEntry> entries = tutees.get(studentEntry.getYearOfStudy());
 			if (entries == null)
@@ -80,41 +76,79 @@ public class LecturerReportDialog extends ReportDialog
 
 	private JPanel createTuteeReports(List<PersonEntry> tutees)
 	{
-		JPanel parent = new JPanel();
-		parent.setLayout(new BoxLayout(parent, BoxLayout.Y_AXIS));
+		JPanel parent = new JPanel(new BorderLayout());
 
-		// id
-		// name
-		// dob
-		// email
-		// address
-		// nok name
-		// nok email
-		// nok
+		JPanel scrollPanel = new JPanel();
+		scrollPanel.setLayout(new BoxLayout(scrollPanel, BoxLayout.Y_AXIS));
 
-		for (PersonEntry tutee : tutees)
+		for (int i = 0, tuteesSize = tutees.size(); i < tuteesSize; i++)
 		{
+			PersonEntry tutee = tutees.get(i);
 			JPanel tuteeReport = new JPanel(new GridBagLayout());
 			GridBagConstraints c = new GridBagConstraints();
+			c.insets = new Insets(2, 2, 2, 2);
+			c.fill = GridBagConstraints.HORIZONTAL;
 
-			addLabel(tuteeReport, "ID", tutee.getIDString());
+			c.gridy = 0;
+			addLabel(tuteeReport, "ID", tutee.getIDString(), c);
+			addLabel(tuteeReport, "Name", tutee.getFullName(), c);
 
-			parent.add(tuteeReport);
+			c.gridy = 1;
+			addLabel(tuteeReport, "DOB", tutee.getDOBFormatted(), c);
+			addLabel(tuteeReport, "Address", tutee.getAddress(), c);
+
+			addSectionTitle(tuteeReport, Integer.toString(i + 1));
+
+			scrollPanel.add(tuteeReport);
+
+			if (i != tuteesSize - 1)
+				scrollPanel.add(Box.createVerticalStrut(5));
 		}
 
+		JScrollPane scrollPane = new JScrollPane(scrollPanel);
+		scrollPane.setPreferredSize(new Dimension(500, 400));
+		parent.add(scrollPane, BorderLayout.CENTER);
+
 		return parent;
+	}
+
+	private JPanel getHeaderPanel()
+	{
+		JPanel top = new JPanel();
+		top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
+
+		top.add(getPersonalPanel());
+		top.add(getYearChoicePanel());
+
+		return top;
 	}
 
 	private JPanel getPersonalPanel()
 	{
 		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		addLabel(panel, "ID", entry.getIDString());
 		addLabel(panel, "Name", entry.getFullName());
 		addLabel(panel, "Office", entry.getOffice());
 
-		return panel;
+		return addSectionTitle(panel, "Tutor");
 	}
 
+	private JPanel getYearChoicePanel()
+	{
+		JPanel panel = new JPanel();
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+		// gather year choices
+		Object[] intChoices = tutees.keySet().toArray();
+		String[] yearChoices = new String[intChoices.length];
+		for (int i = 0; i < intChoices.length; i++)
+			yearChoices[i] = intChoices[i].toString();
+
+		addField(panel, new ChoiceInputField("yos", "Year Of Study", false, yearChoices, 0));
+
+		return panel;
+	}
 
 }
