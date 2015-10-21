@@ -68,7 +68,6 @@ CREATE TABLE LecturerContact (
 
 -- Tutor(studentID, LecturerID)
 CREATE TABLE Tutor (
-  tutorID SERIAL PRIMARY KEY      CHECK (tutorID > 0),
   studentID  INTEGER REFERENCES Student,
   lecturerID INTEGER REFERENCES Lecturer
 );
