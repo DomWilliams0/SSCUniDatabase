@@ -65,7 +65,7 @@ public class DBTable extends JTable
 
 class DBTableModel extends DefaultTableModel
 {
-	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "Email", "Year", "Course Type", "Tutor", "DOB"};
+	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "Email", "Office", "Year", "Course Type", "Tutor", "DOB"};
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(Utils.DATE_FORMAT);
 	private DBTable table;
 
@@ -120,14 +120,16 @@ class DBTableModel extends DefaultTableModel
 			case 4:
 				return entry.email;
 			case 5:
-				return entry.yearOfStudy;
+				return entry.office;
 			case 6:
-				return entry.courseType;
+				return entry.yearOfStudy;
 			case 7:
-				return entry.tutorName;
+				return entry.courseType;
 			case 8:
-				return entry.dob == null ? null : DATE_FORMAT.format(entry.dob);
+				return entry.tutorName;
 			case 9:
+				return entry.dob == null ? null : DATE_FORMAT.format(entry.dob);
+			case 10:
 				return entry.person;
 			default:
 				return "?";
