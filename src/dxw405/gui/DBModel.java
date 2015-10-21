@@ -114,7 +114,7 @@ public class DBModel extends Observable
 
 	public String[] getLecturerNames()
 	{
-		String[] s = new String[tutors.size()];
+		String[] s = new String[lecturers.length];
 		int i = 0;
 		for (PersonEntry tutor : lecturers)
 			s[i++] = tutor.getFullName();
