@@ -3,7 +3,7 @@ package dxw405.gui;
 public enum RightClickTableAction
 {
 	VIEW_REPORT("View report"),
-	ADD_TUTOR("Add tutor");
+	ADD_TUTOR("Set tutor");
 
 	private final String buttonText;
 

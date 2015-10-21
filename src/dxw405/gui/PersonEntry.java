@@ -14,8 +14,9 @@ public class PersonEntry
 	public final String email;
 	public final Integer yearOfStudy;
 	public final String courseType;
-	public final Integer tutorID;
+	public Integer tutorID;
 	public final Date dob;
+	public String tutorName;
 
 	public PersonEntry(Person person, int id, String title, String forename, String surname, String email,
 					   Integer yearOfStudy, String courseType, Integer tutorID, Date dob)
@@ -29,6 +30,7 @@ public class PersonEntry
 		this.yearOfStudy = yearOfStudy;
 		this.courseType = courseType != null ? courseType.trim() : null;
 		this.tutorID = tutorID;
+		this.tutorName = null;
 		this.dob = dob;
 	}
 
@@ -41,6 +43,17 @@ public class PersonEntry
 	public static PersonEntry addLecturer(int id, String title, String forename, String surname, String email)
 	{
 		return new PersonEntry(Person.LECTURER, id, title, forename, surname, email, null, null, null, null);
+	}
+
+	public void updateTutorName(DBModel model)
+	{
+		if (tutorID != null)
+		{
+			PersonEntry tutor = model.getEntryFromID(tutorID);
+			if (tutor != null)
+				tutorName = tutor.getFullName();
+		} else
+			tutorName = null;
 	}
 
 	public String getFullName()

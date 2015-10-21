@@ -7,6 +7,7 @@ import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.inputfields.ChoiceInputField;
 import dxw405.gui.dialog.inputfields.IDInputField;
 import dxw405.gui.dialog.inputfields.InputField;
+import dxw405.util.Person;
 
 import javax.swing.*;
 import java.util.List;
@@ -48,8 +49,21 @@ public class AddTutorDialog extends BaseDialog
 		// add student id
 		input.setVar("studentID", student.id);
 
-		// same tutor
-		if (model.getTutorID(input.getValue("studentID")) == input.getValue("lecturerID"))
-			errors.add("That lecturer is already that student's tutor");
+		// get tutor id
+		String lecturerName = model.getLecturerNames()[((int) input.getValue("lecturerID"))];
+		PersonEntry chosenTutor = model.getEntryFromFullName(lecturerName, Person.LECTURER);
+		input.setVar("lecturerEntry", chosenTutor);
+
+		if (chosenTutor == null)
+			errors.add("Invalid lecturer chosen");
+
+		else
+		{
+			// same tutor check
+			Integer currentTutorID = model.getTutorID(input.getValue("studentID"));
+			if (currentTutorID == chosenTutor.id)
+				errors.add("That lecturer is already that student's tutor");
+
+		}
 	}
 }

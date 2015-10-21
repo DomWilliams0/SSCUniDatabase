@@ -73,11 +73,12 @@ public class UserInput
 	 * @param key The flag's key
 	 * @return The flag's value if it exists; an IllegalArgumentException will be thrown if it does not
 	 */
-	public Object getVar(String key)
+	@SuppressWarnings("unchecked")
+	public <T> T getVar(String key)
 	{
 		Object var = vars.get(key);
 		if (var == null)
 			throw new IllegalArgumentException("Flag not found: " + key);
-		return var;
+		return (T) var;
 	}
 }

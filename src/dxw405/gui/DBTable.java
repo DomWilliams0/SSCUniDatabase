@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DBTable extends JTable
 {
-	private static final int MIN_COL_WIDTH = 20;
+	private static final int MIN_COL_WIDTH = 1;
 	private static final int MAX_COL_WIDTH = 150;
 
 	private DBTableModel tableModel;
@@ -122,7 +122,7 @@ class DBTableModel extends DefaultTableModel
 			case 6:
 				return entry.courseType;
 			case 7:
-				return entry.tutorID;
+				return entry.tutorName;
 			case 8:
 				return entry.dob == null ? null : DATE_FORMAT.format(entry.dob);
 			case 9:
