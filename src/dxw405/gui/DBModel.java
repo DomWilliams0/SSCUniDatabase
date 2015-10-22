@@ -404,7 +404,7 @@ public class DBModel extends Observable
 		try
 		{
 			// to student entry
-			student.setTutorID(newTutor.getID());
+			student.setTutorID(newTutor.getID(), this);
 
 			// to tutor map
 			tutors.put(studentID, student.getTutorID());
