@@ -103,12 +103,10 @@ public class LecturerReportDialog extends ReportDialog implements ActionListener
 
 			c.gridy++;
 			addLabel(tuteeReport, "Email", tutee.getEmail(), c);
-			addLabel(tuteeReport, "Address", tutee.getAddress(), c);
+			addLabel(tuteeReport, "Emergency Contact", tutee.getNOKName(), c);
 
 			c.gridy++;
-			addLabel(tuteeReport, "Emergency Contact", tutee.getNOKName(), c);
 			addLabel(tuteeReport, "Emergency Email", tutee.getNOKEmail(), c);
-			c.gridy++;
 			addLabel(tuteeReport, "Emergency Address", tutee.getNOKAddress(), c);
 
 			addSectionTitle(tuteeReport, Integer.toString(i + 1));
