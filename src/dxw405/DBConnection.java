@@ -143,7 +143,7 @@ public class DBConnection implements AutoCloseable
 	/**
 	 * Executes the queries sequentially in the given file
 	 *
-	 * @param file          The input SQL file
+	 * @param file The input SQL file
 	 * @return An array of result sets from each query, or null if the operation failed
 	 */
 	public ResultSet[] executeQueriesFromFile(File file)
@@ -353,7 +353,10 @@ public class DBConnection implements AutoCloseable
 		logger.fine(msg);
 	}
 
-	public void finer(String msg) {logger.finer(msg);}
+	public void finer(String msg)
+	{
+		logger.finer(msg);
+	}
 
 	/**
 	 * Gets the relative path to the SQL file corresponding to the given config key
@@ -422,16 +425,12 @@ class DBDetails
 {
 	String host, dbName, user, password;
 
-	public DBDetails(String host, String dbName, String user, String password)
-	{
-		this.host = host;
-		this.dbName = dbName;
-		this.user = user;
-		this.password = password;
-	}
-
 	public DBDetails(Config config)
 	{
-		this(config.get("db-host"), config.get("db-name"), config.get("db-user"), config.get("db-pass"));
+		String suffix = config.getBoolean("db-use-local") ? "-local" : "-remote";
+		host = config.get("db-host" + suffix);
+		dbName = config.get("db-name" + suffix);
+		user = config.get("db-user" + suffix);
+		password = config.get("db-pass" + suffix);
 	}
 }
