@@ -4,6 +4,7 @@ import dxw405.gui.DBModel;
 import dxw405.gui.dialog.DialogType;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class StudentReportDialog extends ReportDialog
 {
@@ -15,12 +16,14 @@ public class StudentReportDialog extends ReportDialog
 	@Override
 	protected JPanel createInterface()
 	{
-		JPanel panel = new JPanel();
-
-		panel.add(addSectionTitle(getPersonalPanel(), "Personal"));
-		panel.add(addSectionTitle(getCoursePanel(), "Course"));
-		panel.add(addSectionTitle(getContactPanel(), "Contact"));
-		panel.add(addSectionTitle(getNOKPanel(), "Emergency Contact"));
+		JPanel panel = new JPanel(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.PAGE_START;
+		
+		panel.add(addSectionTitle(getPersonalPanel(), "Personal"),c);
+		panel.add(addSectionTitle(getCoursePanel(), "Course"),c);
+		panel.add(addSectionTitle(getContactPanel(), "Contact"),c);
+		panel.add(addSectionTitle(getNOKPanel(), "Emergency Contact"),c);
 
 		return panel;
 	}
