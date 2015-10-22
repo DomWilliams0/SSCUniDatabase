@@ -11,7 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.logging.Level;
 
 public class DBModel extends Observable
 {
@@ -53,7 +52,7 @@ public class DBModel extends Observable
 	 */
 	private String addEntries(String sqlFile)
 	{
-		ResultSet[] allResults = connection.executeQueriesFromFile(new File(sqlFile), Level.INFO);
+		ResultSet[] allResults = connection.executeQueriesFromFile(new File(sqlFile));
 		if (allResults == null) return null;
 
 		try
@@ -439,6 +438,9 @@ public class DBModel extends Observable
 	 */
 	public void populateStudent(PersonEntry entry)
 	{
+		if (entry.isPopulated())
+			return;
+
 		PreparedStatement[] pss = connection.prepareStatementsFromFile(new File(connection.getSQLPath("sql-full-student")));
 		if (pss == null) return;
 
@@ -457,7 +459,8 @@ public class DBModel extends Observable
 				break;
 			}
 
-			connection.finer("Populated student " + entry.getID() + " with full details");
+			entry.setPopulated(true);
+			connection.fine("Populated student " + entry.getID() + " with full details");
 			ps.close();
 
 

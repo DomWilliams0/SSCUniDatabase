@@ -1,11 +1,8 @@
 package dxw405.gui;
 
-import dxw405.util.Utils;
-
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,7 +63,6 @@ public class DBTable extends JTable
 class DBTableModel extends DefaultTableModel
 {
 	private final static String[] COLUMNS = {"ID", "Title", "Forename", "Surname", "Email", "Office", "Year", "Course Type", "Tutor", "DOB"};
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(Utils.DATE_FORMAT);
 	private DBTable table;
 
 	private List<PersonEntry> entries;

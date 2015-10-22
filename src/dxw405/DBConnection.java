@@ -141,24 +141,12 @@ public class DBConnection implements AutoCloseable
 	}
 
 	/**
-	 * Executes the queries sequentially in the given file, and logs queries to FINE
-	 *
-	 * @param file The input SQL file
-	 * @return An array of result sets from each query, or null if the operation failed
-	 */
-	public ResultSet[] executeQueriesFromFile(File file)
-	{
-		return executeQueriesFromFile(file, Level.FINE);
-	}
-
-	/**
 	 * Executes the queries sequentially in the given file
 	 *
 	 * @param file          The input SQL file
-	 * @param queryLogLevel The log level at which to log each query
 	 * @return An array of result sets from each query, or null if the operation failed
 	 */
-	public ResultSet[] executeQueriesFromFile(File file, Level queryLogLevel)
+	public ResultSet[] executeQueriesFromFile(File file)
 	{
 		List<String> queries = fileParser.parseFile(file);
 		if (queries == null) return null;

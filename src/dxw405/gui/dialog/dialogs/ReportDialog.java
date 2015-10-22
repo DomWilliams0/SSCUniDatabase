@@ -6,16 +6,12 @@ import dxw405.gui.dialog.DialogType;
 import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.inputfields.InputField;
 import dxw405.gui.dialog.inputfields.TextInputField;
-import dxw405.util.Utils;
 
 import javax.swing.*;
-import java.text.SimpleDateFormat;
 import java.util.List;
 
 public abstract class ReportDialog extends BaseDialog
 {
-	protected static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(Utils.DATE_FORMAT);
-
 	protected PersonEntry entry;
 
 	public ReportDialog(DBModel dbModel, DialogType dialogType, Object... extraArgs)
