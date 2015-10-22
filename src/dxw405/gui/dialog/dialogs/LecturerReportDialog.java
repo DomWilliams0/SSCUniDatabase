@@ -93,10 +93,23 @@ public class LecturerReportDialog extends ReportDialog implements ActionListener
 			c.gridy = 0;
 			addLabel(tuteeReport, "Name", tutee.getFullName(), c);
 			addLabel(tuteeReport, "ID", tutee.getIDString(), c);
-
-			c.gridy = 1;
+			c.gridy++;
 			addLabel(tuteeReport, "DOB", tutee.getDOBFormatted(), c);
 			addLabel(tuteeReport, "Address", tutee.getAddress(), c);
+
+			c.gridy++;
+			addLabel(tuteeReport, "Year", tutee.getYearOfStudy().toString(), c);
+			addLabel(tuteeReport, "Course Type", tutee.getCourseType(), c);
+
+			c.gridy++;
+			addLabel(tuteeReport, "Email", tutee.getEmail(), c);
+			addLabel(tuteeReport, "Address", tutee.getAddress(), c);
+
+			c.gridy++;
+			addLabel(tuteeReport, "Emergency Contact", tutee.getNOKName(), c);
+			addLabel(tuteeReport, "Emergency Email", tutee.getNOKEmail(), c);
+			c.gridy++;
+			addLabel(tuteeReport, "Emergency Address", tutee.getNOKAddress(), c);
 
 			addSectionTitle(tuteeReport, Integer.toString(i + 1));
 
@@ -107,7 +120,8 @@ public class LecturerReportDialog extends ReportDialog implements ActionListener
 		}
 
 		JScrollPane scrollPane = new JScrollPane(scrollPanel);
-		scrollPane.setPreferredSize(new Dimension(500, 400));
+		scrollPane.getVerticalScrollBar().setUnitIncrement(10);
+		scrollPane.setPreferredSize(new Dimension(600, 400));
 		parent.add(scrollPane, BorderLayout.CENTER);
 
 		return parent;
