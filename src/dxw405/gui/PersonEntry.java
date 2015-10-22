@@ -154,7 +154,7 @@ public class PersonEntry
 
 	public Integer getYearOfStudy()
 	{
-		return yearOfStudy != null ? yearOfStudy : 0;
+		return yearOfStudy;
 	}
 
 	public void setYearOfStudy(Integer yearOfStudy)
