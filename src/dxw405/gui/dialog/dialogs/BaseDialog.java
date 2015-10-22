@@ -69,7 +69,7 @@ public abstract class BaseDialog extends JDialog
 	protected UserInput display()
 	{
 		// create and show dialog
-		JOptionPane pane = new JOptionPane(createInterface(), JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+		JOptionPane pane = new JOptionPane(createInterface(), JOptionPane.PLAIN_MESSAGE, type.getDialogOption());
 		setTitle(type.getTitle());
 		setContentPane(pane);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
