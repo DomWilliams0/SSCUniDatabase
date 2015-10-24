@@ -5,10 +5,12 @@ import dxw405.util.SQLFileParser;
 import dxw405.util.Utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,7 +35,9 @@ public class DBConnection implements AutoCloseable
 		boolean configLoaded = config.load(new File(configFile));
 		if (!configLoaded) halt("Could not load the config");
 
-		DBDetails details = new DBDetails(config);
+		DBDetails details = new DBDetails(this);
+		if (!details.isValid())
+			halt("Could not load database details");
 
 		// logger
 		initLogger(details.dbName);
@@ -425,12 +429,29 @@ class DBDetails
 {
 	String host, dbName, user, password;
 
-	public DBDetails(Config config)
+	private boolean success;
+
+	public DBDetails(DBConnection connection)
 	{
-		String suffix = config.getBoolean("db-use-local") ? "-local" : "-remote";
-		host = config.get("db-host" + suffix);
-		dbName = config.get("db-name" + suffix);
-		user = config.get("db-user" + suffix);
-		password = config.get("db-pass" + suffix);
+		String dbFile = connection.getResourcePath("db-details");
+		Config dbConfig = new Config(connection);
+		success = dbConfig.load(new File(dbFile));
+		if (!success)
+		{
+			connection.severe("Could not find database details file (" + dbFile + ")");
+			return;
+		}
+
+		connection.fine("Loading database details from " + dbFile);
+
+		host = dbConfig.get("db-host");
+		dbName = dbConfig.get("db-name");
+		user = dbConfig.get("db-user");
+		password = dbConfig.get("db-pass");
+	}
+
+	public boolean isValid()
+	{
+		return success;
 	}
 }
