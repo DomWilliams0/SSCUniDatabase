@@ -53,7 +53,8 @@ public class DBModel extends Observable
 	private String addEntries(String sqlFile)
 	{
 		ResultSet[] allResults = connection.executeQueriesFromFile(new File(sqlFile));
-		if (allResults == null) return null;
+		if (allResults == null)
+			return null;
 
 		try
 		{
@@ -66,7 +67,8 @@ public class DBModel extends Observable
 				{
 					String personType = resultSet.getString(1);
 					PersonType person = Utils.parseEnum(PersonType.class, personType);
-					if (person == null) throw new SQLException("Bad person type specified in query (" + personType + ")");
+					if (person == null)
+						throw new SQLException("Bad person type specified in query (" + personType + ")");
 
 					int id = resultSet.getInt(2);
 					String title = resultSet.getString(3);
@@ -90,8 +92,8 @@ public class DBModel extends Observable
 						office = resultSet.getString(7);
 
 
-					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, dob, tutorID,
-							null, null, null, null, office));
+					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, dob, tutorID, null, null, null,
+							null, office));
 				}
 			}
 
@@ -139,7 +141,8 @@ public class DBModel extends Observable
 			tutors = new HashMap<>();
 
 		ResultSet resultSet = connection.executeQuery("SELECT studentID, lecturerID FROM Tutor ORDER BY lecturerID");
-		if (resultSet == null) return;
+		if (resultSet == null)
+			return;
 
 		try
 		{
@@ -207,7 +210,8 @@ public class DBModel extends Observable
 	private PersonEntry[] gatherLecturers()
 	{
 		ResultSet[] resultSets = connection.executeQueriesFromFile(new File(connection.getSQLPath("sql-get-lecturers")));
-		if (resultSets == null) return null;
+		if (resultSets == null)
+			return null;
 		ResultSet resultSet = resultSets[0];
 
 		List<PersonEntry> results = new ArrayList<>();
@@ -217,8 +221,8 @@ public class DBModel extends Observable
 			while (resultSet.next())
 			{
 				int id = resultSet.getInt(1);
-				results.add(PersonEntry.addLecturer(id, resultSet.getString(2), resultSet.getString(3),
-						resultSet.getString(4), resultSet.getString(5), resultSet.getString(6)));
+				results.add(PersonEntry.addLecturer(id, resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5),
+						resultSet.getString(6)));
 			}
 
 		} catch (SQLException e)
@@ -239,13 +243,15 @@ public class DBModel extends Observable
 	private String[] gatherEnum(String table, String column)
 	{
 		ResultSet resultSet = connection.executeQuery("SELECT " + column + " FROM " + table);
-		if (resultSet == null) return null;
+		if (resultSet == null)
+			return null;
 
 		List<String> results = new ArrayList<>();
 
 		try
 		{
-			while (resultSet.next()) results.add(resultSet.getString(1).trim());
+			while (resultSet.next())
+				results.add(resultSet.getString(1).trim());
 
 		} catch (SQLException e)
 		{
@@ -272,6 +278,8 @@ public class DBModel extends Observable
 	{
 		try
 		{
+			connection.setAutoCommit(false);
+
 			PreparedStatement ps;
 			final int studentID = i.getValue("studentID");
 			String surname = i.getValue("surname");
@@ -331,6 +339,8 @@ public class DBModel extends Observable
 			java.util.Date dob = i.getValue("dob");
 			tableEntries.add(PersonEntry.addStudent(studentID, title, forename, surname, email, yearOfStudy, courseType, null, dob));
 
+			connection.commit();
+
 			// update observers
 			setChanged();
 			notifyObservers();
@@ -340,9 +350,28 @@ public class DBModel extends Observable
 
 		} catch (SQLException e)
 		{
+			try
+			{
+				connection.rollback();
+			} catch (SQLException e1)
+			{
+				connection.severe("Could not rollback transaction: " + e1);
+				connection.logStackTrace(e1);
+			}
+
 			connection.severe("Could not add student: " + e);
 			connection.logStackTrace(e);
 			return e.getMessage();
+		} finally
+		{
+			try
+			{
+				connection.setAutoCommit(true);
+			} catch (SQLException e)
+			{
+				connection.severe("Could not enable auto commit: " + e);
+				connection.logStackTrace(e);
+			}
 		}
 	}
 
@@ -442,7 +471,8 @@ public class DBModel extends Observable
 			return;
 
 		PreparedStatement[] pss = connection.prepareStatementsFromFile(new File(connection.getSQLPath("sql-full-student")));
-		if (pss == null) return;
+		if (pss == null)
+			return;
 
 		try
 		{
@@ -471,13 +501,28 @@ public class DBModel extends Observable
 		}
 	}
 
-	public void logInfo(String msg) {connection.info(msg);}
+	public void logInfo(String msg)
+	{
+		connection.info(msg);
+	}
 
-	public void logSevere(String msg) {connection.severe(msg);}
+	public void logSevere(String msg)
+	{
+		connection.severe(msg);
+	}
 
-	public void logWarning(String msg) {connection.warning(msg);}
+	public void logWarning(String msg)
+	{
+		connection.warning(msg);
+	}
 
-	public void logFine(String msg) {connection.fine(msg);}
+	public void logFine(String msg)
+	{
+		connection.fine(msg);
+	}
 
-	public void logStackTrace(Exception e) {connection.logStackTrace(e);}
+	public void logStackTrace(Exception e)
+	{
+		connection.logStackTrace(e);
+	}
 }

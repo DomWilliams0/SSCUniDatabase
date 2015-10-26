@@ -5,12 +5,10 @@ import dxw405.util.SQLFileParser;
 import dxw405.util.Utils;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.*;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -294,6 +292,21 @@ public class DBConnection implements AutoCloseable
 	public PreparedStatement prepareStatement(String sql) throws SQLException
 	{
 		return connection.prepareStatement(sql);
+	}
+
+	public void setAutoCommit(boolean autoCommit) throws SQLException
+	{
+		connection.setAutoCommit(autoCommit);
+	}
+
+	public void rollback() throws SQLException
+	{
+		connection.rollback();
+	}
+
+	public void commit() throws SQLException
+	{
+		connection.commit();
 	}
 
 	/**
