@@ -26,5 +26,5 @@ SELECT
   eMailAddress,
   office
 FROM Lecturer
-  INNER JOIN Titles ON Titles.titleId = Lecturer.titleId
-  INNER JOIN LecturerContact ON LecturerContact.lecturerID = Lecturer.lecturerID
+  LEFT JOIN Titles ON Titles.titleId = Lecturer.titleId
+  LEFT JOIN LecturerContact ON LecturerContact.lecturerID = Lecturer.lecturerID
