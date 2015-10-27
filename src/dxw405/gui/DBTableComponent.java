@@ -93,7 +93,11 @@ public class DBTableComponent extends JPanel implements Observer
 			return null;
 
 		int actualRow = table.convertRowIndexToModel(row);
-		return model.getTableEntries().get(actualRow);
+
+		PersonType personType = table.getPersonTypeAt(actualRow);
+		int personID = table.getIDAt(actualRow);
+
+		return model.getEntry(personType, personID);
 	}
 
 	/**

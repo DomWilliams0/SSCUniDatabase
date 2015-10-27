@@ -71,29 +71,8 @@ public class DBModel extends Observable
 						throw new SQLException("Bad person type specified in query (" + personType + ")");
 
 					int id = resultSet.getInt(2);
-					String title = resultSet.getString(3);
-					String forename = resultSet.getString(4);
-					String surname = resultSet.getString(5);
-					String email = resultSet.getString(6);
 
-					Integer yearOfStudy = null;
-					String courseType = null;
-					Integer tutorID = null;
-					java.util.Date dob = null;
-					String office = null;
-
-					if (person == PersonType.STUDENT)
-					{
-						dob = new java.util.Date(resultSet.getDate(7).getTime());
-						yearOfStudy = resultSet.getInt(8);
-						courseType = resultSet.getString(9);
-						tutorID = resultSet.getInt(10);
-					} else
-						office = resultSet.getString(7);
-
-
-					tableEntries.add(new PersonEntry(person, id, title, forename, surname, email, yearOfStudy, courseType, dob, tutorID, null, null, null,
-							null, office));
+					tableEntries.add(getEntry(person, id));
 				}
 			}
 
@@ -175,6 +154,76 @@ public class DBModel extends Observable
 	}
 
 	/**
+	 * Creates a PersonEntry from the given resultset
+	 * @param personType The person type
+	 * @param id The person's ID
+	 * @param resultSet The result set
+	 * @return A new PersonEntry
+	 */
+	private PersonEntry getEntry(PersonType personType, int id, ResultSet resultSet) throws SQLException
+	{
+		String title = resultSet.getString(2);
+		String forename = resultSet.getString(3);
+		String surname = resultSet.getString(4);
+		String email = resultSet.getString(5);
+
+		PersonEntry entry = new PersonEntry(personType, id, title, forename, surname, email);
+
+		if (personType == PersonType.STUDENT)
+		{
+			entry.setDOB(new java.util.Date(resultSet.getDate(6).getTime()));
+			entry.setYearOfStudy(resultSet.getInt(7));
+			entry.setCourseType(resultSet.getString(8));
+			entry.setTutorID(resultSet.getInt(9));
+			entry.setAddress(resultSet.getString(10));
+			entry.setNOKName(resultSet.getString(11));
+			entry.setNOKEmail(resultSet.getString(12));
+			entry.setNOKAddress(resultSet.getString(13));
+
+		} else if (personType == PersonType.LECTURER)
+			entry.setOffice(resultSet.getString(6));
+
+		return entry;
+	}
+
+	/**
+	 * Gets the person with the given type and id from the database
+	 *
+	 * @param personType The person type
+	 * @param id         The person's ID
+	 * @return A new PersonEntry, or null if the operation failed
+	 */
+	public PersonEntry getEntry(PersonType personType, int id)
+	{
+		String queryFile = "sql-get-" + personType.toString().toLowerCase();
+		PreparedStatement[] pss = connection.prepareStatementsFromFile(new File(connection.getSQLPath(queryFile)));
+
+		if (pss == null)
+			return null;
+
+		try
+		{
+			PreparedStatement ps = pss[0];
+			ps.setInt(1, id);
+			ResultSet resultSet = ps.executeQuery();
+
+			if (!resultSet.next())
+				return null;
+
+			PersonEntry ret = getEntry(personType, id, resultSet);
+
+			ps.close();
+			return ret;
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not get " + personType + " with id " + id + ": " + e);
+			connection.logStackTrace(e);
+			return null;
+		}
+	}
+
+	/**
 	 * Finds the entry with the given ID
 	 *
 	 * @param id The ID
@@ -188,7 +237,6 @@ public class DBModel extends Observable
 
 		return null;
 	}
-
 
 	/**
 	 * Finds the entry with the given name

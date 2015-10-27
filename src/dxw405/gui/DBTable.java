@@ -1,5 +1,7 @@
 package dxw405.gui;
 
+import dxw405.util.PersonType;
+
 import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
@@ -57,6 +59,17 @@ public class DBTable extends JTable
 		TableRowSorter<DBTableModel> sorter = new TableRowSorter<>(tableModel);
 		sorter.setRowFilter(filter);
 		setRowSorter(sorter);
+	}
+
+	public PersonType getPersonTypeAt(int row)
+	{
+		return (PersonType) tableModel.getValueAt(row, tableModel.getPersonTypeColumn());
+	}
+
+	public int getIDAt(int row)
+	{
+		Integer id = (Integer) tableModel.getValueAt(row, tableModel.getIDColumn());
+		return id == null ? -1 : id;
 	}
 }
 
@@ -131,6 +144,16 @@ class DBTableModel extends DefaultTableModel
 				return "?";
 
 		}
+	}
+
+	public int getPersonTypeColumn()
+	{
+		return COLUMNS.length;
+	}
+
+	public int getIDColumn()
+	{
+		return 0;
 	}
 }
 
