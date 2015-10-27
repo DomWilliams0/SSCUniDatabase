@@ -1,7 +1,7 @@
 -- Titles (titleID, titleString)
 CREATE TABLE Titles (
   titleID     SERIAL PRIMARY KEY,
-  titleString CHAR(16) NOT NULL
+  titleString VARCHAR(16) NOT NULL
 );
 
 INSERT INTO Titles VALUES
@@ -12,7 +12,7 @@ INSERT INTO Titles VALUES
 -- RegistrationType(registrationTypeID, description)
 CREATE TABLE RegistrationType (
   registrationTypeID SERIAL PRIMARY KEY,
-  description        CHAR(16) NOT NULL
+  description        VARCHAR(16) NOT NULL
 );
 
 INSERT INTO RegistrationType VALUES
@@ -23,8 +23,8 @@ INSERT INTO RegistrationType VALUES
 CREATE TABLE Student (
   studentID   INTEGER PRIMARY KEY      CHECK (studentID > 0),
   titleID     INTEGER REFERENCES Titles NOT NULL,
-  forename    CHAR(32)                  NOT NULL,
-  familyName  CHAR(32)                  NOT NULL,
+  forename    VARCHAR(32)               NOT NULL,
+  familyName  VARCHAR(32)               NOT NULL,
   dateOfBirth DATE                      NOT NULL CHECK (dateOfBirth >= '1900-01-01' :: DATE)
 );
 
@@ -32,8 +32,8 @@ CREATE TABLE Student (
 CREATE TABLE Lecturer (
   lecturerID INTEGER PRIMARY KEY      CHECK (lecturerID > 0),
   titleID    INTEGER REFERENCES Titles,
-  forename   CHAR(32) NOT NULL,
-  familyName CHAR(32) NOT NULL
+  forename   VARCHAR(32) NOT NULL,
+  familyName VARCHAR(32) NOT NULL
 );
 
 -- StudentRegistration(studentID, yearOfStudy, registrationTypeID)
@@ -47,23 +47,23 @@ CREATE TABLE StudentRegistration (
 -- StudentContact (studentID, eMailAddress, postalAddress)
 CREATE TABLE StudentContact (
   studentID     INTEGER PRIMARY KEY REFERENCES Student,
-  eMailAddress  CHAR(320),
+  eMailAddress  VARCHAR(320),
   postalAddress VARCHAR(512)
 );
 
 -- NextOfKin(studentID, name, eMailAddress, postalAddress)
 CREATE TABLE NextOfKin (
   studentID     INTEGER PRIMARY KEY REFERENCES Student,
-  name          CHAR(64),
-  eMailAddress  CHAR(320),
+  name          VARCHAR(64),
+  eMailAddress  VARCHAR(320),
   postalAddress VARCHAR(512)
 );
 
 -- LecturerContact(LecturerID, Office, eMailAddress)
 CREATE TABLE LecturerContact (
   lecturerID   INTEGER PRIMARY KEY REFERENCES Lecturer,
-  office       CHAR(10),
-  eMailAddress CHAR(320)
+  office       VARCHAR(10),
+  eMailAddress VARCHAR(320)
 );
 
 -- Tutor(studentID, LecturerID)

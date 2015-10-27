@@ -60,7 +60,7 @@ public class StudentReportDialog extends ReportDialog
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
 		// tutor, year, course
-		addLabel(panel, "Tutor", entry.getTutorName());
+		addLabel(panel, "Tutor", entry.getDisplayTutorID());
 		addLabel(panel, "Year Of Study", "Year " + entry.getYearOfStudy());
 		addLabel(panel, "Course Type", entry.getCourseType());
 

@@ -40,7 +40,7 @@ public class DBOverviewComponent extends JPanel
 	public void init()
 	{
 		model.gatherEnums();
-		model.populateTable();
+		table.init();
 	}
 
 	/**

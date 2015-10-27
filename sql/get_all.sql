@@ -1,3 +1,4 @@
+-- gets all information to display in the table
 SELECT
   'Student' AS "Person Type",
   S.studentId,

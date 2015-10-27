@@ -294,20 +294,42 @@ public class DBConnection implements AutoCloseable
 		return connection.prepareStatement(sql);
 	}
 
-	public void setAutoCommit(boolean autoCommit) throws SQLException
+	public void setAutoCommit(boolean autoCommit)
 	{
-		connection.setAutoCommit(autoCommit);
+		try
+		{
+			connection.setAutoCommit(autoCommit);
+		} catch (SQLException e)
+		{
+			severe("Could not set auto-commit to " + autoCommit + ": " + e);
+			logStackTrace(e);
+		}
 	}
 
-	public void rollback() throws SQLException
+	public void rollback()
 	{
-		connection.rollback();
+		try
+		{
+			connection.rollback();
+		} catch (SQLException e)
+		{
+			severe("Could not rollback: " + e);
+			logStackTrace(e);
+		}
 	}
 
-	public void commit() throws SQLException
+	public void commit()
 	{
-		connection.commit();
+		try
+		{
+			connection.commit();
+		} catch (SQLException e)
+		{
+			severe("Could not commit: " + e);
+			logStackTrace(e);
+		}
 	}
+
 
 	/**
 	 * Prepares the statements sequentially from the given file

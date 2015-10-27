@@ -11,7 +11,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
-import java.util.List;
+import java.util.Objects;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -32,17 +32,46 @@ public class DBTableComponent extends JPanel implements Observer
 		add(scrollPane, BorderLayout.CENTER);
 	}
 
+	private void updateTable()
+	{
+		((DBTableModel) table.getModel()).setEntries(model.fetchEntries());
+	}
+
+	private void updateTutor(Integer id)
+	{
+		PersonEntry entry = model.getEntry(PersonType.STUDENT, id);
+		if (entry == null)
+			return;
+
+		int row = findRow(id);
+		if (row > 0)
+			table.getModel().setValueAt(entry.getTutorID(), row, ((DBTableModel) table.getModel()).getTutorColumn());
+	}
+
+	private int findRow(int personID)
+	{
+		for (int i = 0; i < table.getRowCount(); ++i)
+			for (int j = 0; j < table.getColumnCount(); ++j)
+				if (Objects.equals(table.getValueAt(i, j), personID))
+					return i;
+
+		return -1;
+	}
+
 	@Override
 	public void update(Observable o, Object arg)
 	{
+		// success: update all
+		if (arg == null)
+			updateTable();
+
+			// success: update single row
+		else if (arg instanceof Integer)
+			updateTutor((Integer) arg);
+
 		// failure
-		if (arg != null)
+		if (arg instanceof String)
 			JOptionPane.showMessageDialog(this, arg, "Failed to retrieve data", JOptionPane.ERROR_MESSAGE);
-
-		List<PersonEntry> entries = model.getTableEntries();
-		DBTableModel tableModel = (DBTableModel) table.getModel();
-
-		tableModel.setEntries(entries);
 	}
 
 	public void filter(Action visibility)
@@ -81,7 +110,6 @@ public class DBTableComponent extends JPanel implements Observer
 	 */
 	public PersonEntry getEntry(Point point)
 	{
-		// todo doesn't update when table is shuffled
 		int row = table.rowAtPoint(point);
 		if (row >= 0 && row < table.getRowCount())
 			table.setRowSelectionInterval(row, row);
@@ -134,6 +162,11 @@ public class DBTableComponent extends JPanel implements Observer
 		}
 
 		return popup;
+	}
+
+	public void init()
+	{
+		updateTable();
 	}
 
 

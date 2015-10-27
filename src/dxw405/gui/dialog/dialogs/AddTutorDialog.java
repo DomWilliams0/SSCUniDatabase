@@ -6,18 +6,20 @@ import dxw405.gui.dialog.DialogType;
 import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.inputfields.ChoiceInputField;
 import dxw405.gui.dialog.inputfields.IDInputField;
-import dxw405.util.PersonType;
 
 import javax.swing.*;
 import java.util.List;
+import java.util.Objects;
 
 public class AddTutorDialog extends BaseDialog
 {
 	private PersonEntry student;
+	private List<String> lecturerNames;
 
 	public AddTutorDialog(DBModel dbModel, Object... extraArgs)
 	{
 		super(dbModel, DialogType.ADD_TUTOR, extraArgs);
+		lecturerNames = model.getLecturerNames();
 	}
 
 	@Override
@@ -34,7 +36,8 @@ public class AddTutorDialog extends BaseDialog
 		panel.setLayout(layout);
 
 		addField(panel, new IDInputField("studentID", "Student ID", true, student.getID())).setEditable(false);
-		addField(panel, new ChoiceInputField("lecturerID", "Tutor", true, model.getLecturerNames(), 0));
+
+		addField(panel, new ChoiceInputField("lecturerID", "Tutor", true, lecturerNames.toArray(new String[lecturerNames.size()]), 0));
 
 		return panel;
 	}
@@ -46,20 +49,36 @@ public class AddTutorDialog extends BaseDialog
 		input.setVar("studentID", student.getID());
 
 		// get tutor id
-		String lecturerName = model.getLecturerNames()[((int) input.getValue("lecturerID"))];
-		PersonEntry chosenTutor = model.getEntryFromFullName(lecturerName, PersonType.LECTURER);
-		input.setVar("lecturerEntry", chosenTutor);
+		String lecturerChoice = lecturerNames.get(input.getValue("lecturerID"));
+		Integer lecturerID = splitChoice(lecturerChoice);
 
-		if (chosenTutor == null)
+		input.setVar("lecturerID", lecturerID);
+
+		if (lecturerID == null)
 			errors.add("Invalid lecturer chosen");
 
 		else
 		{
 			// same tutor check
 			Integer currentTutorID = model.getTutorID(input.getValue("studentID"));
-			if (currentTutorID != null && currentTutorID == chosenTutor.getID())
+			if (currentTutorID != null && Objects.equals(currentTutorID, lecturerID))
 				errors.add("That lecturer is already that student's tutor");
 
+		}
+	}
+
+	private Integer splitChoice(String choice)
+	{
+		String[] split = choice.split(":");
+		if (split.length != 2)
+			return null;
+
+		try
+		{
+			return Integer.parseInt(split[0]);
+		} catch (NumberFormatException e)
+		{
+			return null;
 		}
 	}
 }

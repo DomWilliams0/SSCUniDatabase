@@ -4,6 +4,7 @@ import dxw405.gui.DBModel;
 import dxw405.gui.PersonEntry;
 import dxw405.gui.dialog.DialogType;
 import dxw405.gui.dialog.inputfields.ChoiceInputField;
+import dxw405.util.PersonType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -58,7 +59,7 @@ public class LecturerReportDialog extends ReportDialog implements ActionListener
 			if (tutorEntry.getValue() != entry.getID())
 				continue;
 
-			PersonEntry studentEntry = model.getEntryFromID(tutorEntry.getKey());
+			PersonEntry studentEntry = model.getEntry(PersonType.STUDENT, tutorEntry.getKey());
 			if (studentEntry == null)
 				continue;
 

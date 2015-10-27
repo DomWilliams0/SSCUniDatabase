@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class DBTable extends JTable
@@ -113,6 +114,49 @@ class DBTableModel extends DefaultTableModel
 	}
 
 	@Override
+	public void setValueAt(Object value, int row, int column)
+	{
+		PersonEntry entry = entries.get(row);
+		switch (column)
+		{
+			case 0:
+				entry.setID((Integer) value);
+				break;
+			case 1:
+				entry.setTitle((String) value);
+				break;
+			case 2:
+				entry.setForename((String) value);
+				break;
+			case 3:
+				entry.setSurname((String) value);
+				break;
+			case 4:
+				entry.setEmail((String) value);
+				break;
+			case 5:
+				entry.setOffice((String) value);
+				break;
+			case 6:
+				entry.setYearOfStudy((Integer) value);
+				break;
+			case 7:
+				entry.setCourseType((String) value);
+				break;
+			case 8:
+				entry.setTutorID((Integer) value);
+				break;
+			case 9:
+				entry.setDOB((Date) value);
+				break;
+			default:
+				throw new IllegalArgumentException("Can't set column " + column);
+		}
+
+		fireTableCellUpdated(row, column);
+	}
+
+	@Override
 	public Object getValueAt(int rowIndex, int columnIndex)
 	{
 		PersonEntry entry = entries.get(rowIndex);
@@ -135,7 +179,7 @@ class DBTableModel extends DefaultTableModel
 			case 7:
 				return entry.getCourseType();
 			case 8:
-				return entry.getTutorName();
+				return entry.getDisplayTutorID();
 			case 9:
 				return entry.getDOBFormatted();
 			case 10:
@@ -144,6 +188,11 @@ class DBTableModel extends DefaultTableModel
 				return "?";
 
 		}
+	}
+
+	public int getTutorColumn()
+	{
+		return 8;
 	}
 
 	public int getPersonTypeColumn()

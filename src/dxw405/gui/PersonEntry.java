@@ -86,11 +86,11 @@ public class PersonEntry
 		return title + ". " + forename + " " + surname;
 	}
 
-
 	public PersonType getPersonType()
 	{
 		return personType;
 	}
+
 
 	public int getID()
 	{
@@ -187,9 +187,16 @@ public class PersonEntry
 		return tutorID;
 	}
 
+	public String getDisplayTutorID()
+	{
+		return tutorID == null ? "" : tutorID.toString();
+	}
+
 	public void setTutorID(Integer tutorID)
 	{
 		this.tutorID = tutorID;
+//		if (model != null && tutorID != null)
+//			this.tutorName = model.getLecturerName(tutorID);
 	}
 
 	public String getTutorName()
@@ -245,19 +252,6 @@ public class PersonEntry
 	public void setOffice(String office)
 	{
 		this.office = office != null ? office.trim() : null;
-	}
-
-	public void setTutorID(Integer tutorID, DBModel model)
-	{
-		setTutorID(tutorID);
-
-		if (tutorID != null)
-		{
-			PersonEntry tutor = model.getEntryFromID(tutorID);
-			if (tutor != null)
-				tutorName = tutor.getFullName();
-		} else
-			tutorName = null;
 	}
 
 	public String getDOBFormatted()
