@@ -4,6 +4,7 @@ import dxw405.gui.DBModel;
 import dxw405.gui.dialog.DialogType;
 import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.inputfields.*;
+import dxw405.util.PersonType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -59,7 +60,7 @@ public class AddStudentDialog extends BaseDialog
 	protected void validateAndFlag(List<String> errors, UserInput i)
 	{
 		// student id already exists
-		if (model.personExists(i.getValue("studentID")))
+		if (model.personExists(PersonType.STUDENT, i.getValue("studentID")))
 			errors.add("A student already exists with that ID");
 
 		// flags

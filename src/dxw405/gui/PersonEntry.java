@@ -18,14 +18,12 @@ public class PersonEntry
 	private String courseType;
 	private Date dob;
 	private Integer tutorID;
-	private String tutorName;
 
 	private String address;
 	private String nokName;
 	private String nokEmail;
 	private String nokAddress;
 	private String office;
-	private boolean populated;
 
 	/**
 	 * Normal constructor for common fields between students and stff
@@ -33,7 +31,6 @@ public class PersonEntry
 	public PersonEntry(PersonType personType, int id, String title, String forename, String surname, String email)
 	{
 		this.personType = personType;
-		this.populated = false;
 		setID(id);
 		setTitle(title);
 		setForename(forename);
@@ -74,11 +71,6 @@ public class PersonEntry
 		entry.setOffice(office);
 		return entry;
 
-	}
-
-	public boolean isPopulated()
-	{
-		return populated;
 	}
 
 	public String getFullName()
@@ -194,14 +186,7 @@ public class PersonEntry
 
 	public void setTutorID(Integer tutorID)
 	{
-		this.tutorID = tutorID;
-//		if (model != null && tutorID != null)
-//			this.tutorName = model.getLecturerName(tutorID);
-	}
-
-	public String getTutorName()
-	{
-		return tutorName;
+		this.tutorID = tutorID == 0 ? null : tutorID;
 	}
 
 	public String getAddress()
@@ -257,10 +242,5 @@ public class PersonEntry
 	public String getDOBFormatted()
 	{
 		return dob == null ? "" : Utils.DATE_FORMATTER.format(dob);
-	}
-
-	public void setPopulated(boolean populated)
-	{
-		this.populated = populated;
 	}
 }

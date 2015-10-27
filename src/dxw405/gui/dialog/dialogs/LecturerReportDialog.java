@@ -63,8 +63,6 @@ public class LecturerReportDialog extends ReportDialog implements ActionListener
 			if (studentEntry == null)
 				continue;
 
-			model.populateStudent(studentEntry);
-
 			List<PersonEntry> entries = tutees.get(studentEntry.getYearOfStudy());
 			if (entries == null)
 			{

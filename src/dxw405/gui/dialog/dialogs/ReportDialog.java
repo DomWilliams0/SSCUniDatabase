@@ -18,7 +18,6 @@ public abstract class ReportDialog extends BaseDialog
 	{
 		super(dbModel, dialogType);
 		entry = (PersonEntry) extraArgs[0];
-		model.populateStudent(entry);
 	}
 
 	@Override

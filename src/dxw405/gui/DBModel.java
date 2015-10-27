@@ -28,11 +28,7 @@ public class DBModel extends Observable
 	{
 		ResultSet[] allResults = connection.executeQueriesFromFile(new File(connection.getSQLPath("sql-populate-tables")));
 		if (allResults == null)
-		{
-			setChanged();
-			notifyObservers();
 			return null;
-		}
 
 		List<PersonEntry> entries = new ArrayList<>();
 
@@ -363,10 +359,23 @@ public class DBModel extends Observable
 	 * @param id The ID to check
 	 * @return If a person already exists with that ID
 	 */
-	public boolean personExists(int id)
+	public boolean personExists(PersonType type, int id)
 	{
-		// todo count select where id = id
-		return false;
+		try
+		{
+			String query = "SELECT 1 FROM " + type.getTableName() + " WHERE " + type.getIdName() + " = ?";
+			PreparedStatement ps = connection.prepareStatement(query);
+			ps.setInt(1, id);
+
+			ResultSet resultSet = ps.executeQuery();
+			return resultSet.next();
+
+		} catch (SQLException e)
+		{
+			connection.severe("Could not check if " + type + " with id " + id + " exists");
+			connection.logStackTrace(e);
+			return false;
+		}
 	}
 
 	public String addTutor(PersonEntry student, UserInput input)
@@ -443,47 +452,6 @@ public class DBModel extends Observable
 
 			setChanged();
 			notifyObservers(studentID);
-		}
-	}
-
-	/**
-	 * Populates the given entry with the corresponding contact and emergency contact information
-	 * This is only loaded on demand
-	 *
-	 * @param entry The entry to populate
-	 */
-	public void populateStudent(PersonEntry entry)
-	{
-		if (entry.isPopulated())
-			return;
-
-		PreparedStatement[] pss = connection.prepareStatementsFromFile(new File(connection.getSQLPath("sql-full-student")));
-		if (pss == null)
-			return;
-
-		try
-		{
-			PreparedStatement ps = pss[0];
-			ps.setInt(1, entry.getID());
-			ResultSet resultSet = ps.executeQuery();
-
-			if (!resultSet.next())
-				return;
-
-			entry.setAddress(resultSet.getString(1));
-			entry.setNOKName(resultSet.getString(2));
-			entry.setNOKEmail(resultSet.getString(3));
-			entry.setNOKAddress(resultSet.getString(4));
-
-			entry.setPopulated(true);
-			connection.fine("Populated student " + entry.getID() + " with full details");
-			ps.close();
-
-
-		} catch (SQLException e)
-		{
-			connection.severe("Could not populate student " + entry.getID() + " with full details: " + e);
-			connection.logStackTrace(e);
 		}
 	}
 
