@@ -25,7 +25,7 @@ CREATE TABLE Student (
   titleID     INTEGER REFERENCES Titles NOT NULL,
   forename    CHAR(32)                  NOT NULL,
   familyName  CHAR(32)                  NOT NULL,
-  dateOfBirth DATE NOT NULL CHECK (dateOfBirth >= '1900-01-01' :: DATE)
+  dateOfBirth DATE                      NOT NULL CHECK (dateOfBirth >= '1900-01-01' :: DATE)
 );
 
 -- Lecturer (lecturerID, titleID, foreName, familyName)
