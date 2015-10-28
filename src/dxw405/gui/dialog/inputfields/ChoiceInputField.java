@@ -7,7 +7,9 @@ public class ChoiceInputField extends InputField
 	public ChoiceInputField(String key, String labelString, boolean mandatory, String[] choices, int initialChoice)
 	{
 		super(labelString, mandatory, new JComboBox<>(choices), key);
-		((JComboBox) component).setSelectedIndex(initialChoice);
+
+		int choice = choices.length == 0 ? -1 : initialChoice;
+		((JComboBox) component).setSelectedIndex(choice);
 	}
 
 	@Override
