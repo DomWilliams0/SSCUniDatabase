@@ -1,6 +1,7 @@
 package dxw405.gui;
 
 import dxw405.gui.dialog.DialogType;
+import dxw405.gui.dialog.ProgressDialog;
 import dxw405.gui.dialog.UserInput;
 import dxw405.gui.dialog.dialogs.BaseDialog;
 import dxw405.util.Utils;
@@ -39,8 +40,13 @@ public class DBOverviewComponent extends JPanel
 	 */
 	public void init()
 	{
+		ProgressDialog progress = new ProgressDialog("Fetching from database...");
+		progress.begin();
+
 		model.gatherEnums();
 		table.init();
+
+		progress.destroy();
 	}
 
 	/**
@@ -95,9 +101,11 @@ public class DBOverviewComponent extends JPanel
 
 			// filtering
 			if (a.getParent() == Action.VISIBILITY)
+			{
 				table.filter(a);
+			}
 
-				// add student
+			// add student
 			else if (a.getParent() == Action.ADD)
 			{
 				UserInput input = BaseDialog.showDialog(DialogType.ADD_STUDENT, model);
