@@ -456,7 +456,7 @@ public class DBConnection implements AutoCloseable
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		e.printStackTrace(pw);
-		logger.log(Level.INFO, "\n" + wrapper + "\n" + sw.toString() + wrapper);
+		logger.log(Level.FINER, "\n" + wrapper + "\n" + sw.toString() + wrapper);
 	}
 }
 
