@@ -31,9 +31,9 @@ CREATE TABLE Student (
 -- Lecturer (lecturerID, titleID, foreName, familyName)
 CREATE TABLE Lecturer (
   lecturerID INTEGER PRIMARY KEY      CHECK (lecturerID > 0),
-  titleID    INTEGER REFERENCES Titles,
-  forename   VARCHAR(32) NOT NULL,
-  familyName VARCHAR(32) NOT NULL
+  titleID    INTEGER REFERENCES Titles NOT NULL,
+  forename   VARCHAR(32)               NOT NULL,
+  familyName VARCHAR(32)               NOT NULL
 );
 
 -- StudentRegistration(studentID, yearOfStudy, registrationTypeID)
