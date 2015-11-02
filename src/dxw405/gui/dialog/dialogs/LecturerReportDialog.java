@@ -118,7 +118,7 @@ public class LecturerReportDialog extends ReportDialog implements ActionListener
 
 		JScrollPane scrollPane = new JScrollPane(scrollPanel);
 		scrollPane.getVerticalScrollBar().setUnitIncrement(10);
-		scrollPane.setPreferredSize(new Dimension(600, 400));
+		scrollPane.setPreferredSize(new Dimension(800, 400));
 		parent.add(scrollPane, BorderLayout.CENTER);
 
 		return parent;
